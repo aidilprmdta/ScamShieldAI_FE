@@ -1,6 +1,8 @@
 package com.example.scamshieldai.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,17 +21,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val TealAccent = Color(0xFF2DD4BF)
-private val Slate400 = Color(0xFF94A3B8)
-private val Slate500 = Color(0xFF64748B)
+import com.example.scamshieldai.R
+import com.example.scamshieldai.ui.theme.*
 
 data class EducationItem(
     val id: String,
@@ -36,7 +36,7 @@ data class EducationItem(
     val category: String,
     val type: String, // "ARTIKEL", "KUIS", "BACAAN WAJIB"
     val duration: String,
-    val imageUrl: String? = null
+    val imageResId: Int? = null
 )
 
 @Composable
@@ -49,10 +49,18 @@ fun EducationCenterScreen(
     var selectedCategory by remember { mutableStateOf("Semua") }
 
     val allItems = listOf(
-        EducationItem("0", "Panduan Lengkap Mengenali Penipuan Digital 2026", "Keamanan", "BACAAN WAJIB", "10 menit"),
-        EducationItem("1", "Waspada Phishing: Kenali Tautan Palsu", "Phishing", "ARTIKEL", "3 menit"),
-        EducationItem("2", "Modus \"Mama Minta Transfer\" — Rekayasa Sosial", "Rekayasa Sosial", "ARTIKEL", "4 menit"),
-        EducationItem("3", "QRIS Palsu & Quishing — Bahaya di Balik QR Code", "QRIS Palsu", "ARTIKEL", "3 menit"),
+        EducationItem("0", "Panduan Lengkap Mengenali Penipuan Digital 2026", "Keamanan", "BACAAN WAJIB", "10 menit", R.drawable.bacaan_wajib),
+        EducationItem("1", "Waspada Phishing: Kenali Tautan Palsu", "Phishing", "ARTIKEL", "3 menit", R.drawable.phising),
+        EducationItem("2", "Modus \"Mama Minta Transfer\" — Rekayasa Sosial", "Rekayasa Sosial", "ARTIKEL", "4 menit", R.drawable.chatpalsu),
+        EducationItem("3", "QRIS Palsu & Quishing — Bahaya di Balik QR Code", "QRIS Palsu", "ARTIKEL", "3 menit", R.drawable.qushing),
+        EducationItem("5", "Jangan Asal Scan! Cara Cerdas Membedakan QRIS Asli vs QRIS Palsu", "QRIS Palsu", "ARTIKEL", "5 menit", R.drawable.qushing),
+        EducationItem("6", "Terlanjur Klik Link Mencurigakan? Lakukan 5 Langkah Penyelamatan Darurat!", "Keamanan", "ARTIKEL", "4 menit", R.drawable.scamp_no_palsu),
+        EducationItem("7", "Mengenal 7 Wajah Phishing: Jangan Terkecoh Modus yang Mengintai Anda!", "Phishing", "ARTIKEL", "6 menit", R.drawable.phising),
+        EducationItem("8", "Hukum Indonesia Tidak Tinggal Diam: Sanksi Pidana & Hak Ganti Rugi Korban Phishing", "Hukum", "ARTIKEL", "5 menit", R.drawable.bacaan_wajib),
+        EducationItem("9", "Awas Penyusup Senyap! Bagaimana Malware Menguras Rekening Anda Tanpa Disadari", "Keamanan", "ARTIKEL", "5 menit", R.drawable.phising),
+        EducationItem("10", "Jebakan Sosial Media: Trik Licik Penipu Menandai Anda di WhatsApp dan Instagram", "Rekayasa Sosial", "ARTIKEL", "4 menit", R.drawable.phising),
+        EducationItem("11", "Panduan Khusus Pemilik Toko (Merchant): Amankan QRIS Anda dari Tangan Jahil!", "Bisnis", "ARTIKEL", "5 menit", R.drawable.qushing),
+        EducationItem("12", "Mengintip Dapur Penetas Tautan Phishing: Seberapa Mudah Halaman Palsu Dibuat?", "Teknis", "ARTIKEL", "6 menit", R.drawable.phising),
         EducationItem("4", "Kuis: Bisakah Kamu Bedakan Mana yang Scam?", "Simulasi", "KUIS", "5 menit")
     )
 
@@ -64,65 +72,60 @@ fun EducationCenterScreen(
         }
     }
 
-    val progressItems = remember { allItems.filter { it.type == "ARTIKEL" } }
-    val completedProgressCount = remember(completedIds) {
-        progressItems.count { completedIds.contains(it.id) }
-    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
-            .statusBarsPadding()
+            .background(WhiteBackground)
     ) {
-        // ... (Header remains the same)
-        // Header
-        Row(
+        // Hero Header for Education
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(YaleBlue)
+                .statusBarsPadding()
+                .padding(bottom = 32.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "Pusat Edukasi",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Literasi digital untuk perlindungan diri",
-                    color = Slate400,
-                    fontSize = 14.sp
-                )
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Pusat Edukasi",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Literasi digital untuk perlindungan diri",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            contentPadding = PaddingValues(top = 24.dp, bottom = 110.dp)
         ) {
             // Featured Card
             item {
                 FeaturedCard(
+                    isCompleted = completedIds.contains(allItems[0].id),
                     onClick = { onItemClick(allItems[0]) }
-                )
-            }
-
-            // Progress Section
-            item {
-                ProgressSection(
-                    completedCount = completedProgressCount,
-                    totalCount = progressItems.size
                 )
             }
 
@@ -138,6 +141,7 @@ fun EducationCenterScreen(
             items(filteredItems) { item ->
                 EducationCard(
                     item = item,
+                    isCompleted = completedIds.contains(item.id),
                     onClick = { onItemClick(item) },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 )
@@ -147,27 +151,55 @@ fun EducationCenterScreen(
 }
 
 @Composable
-private fun FeaturedCard(onClick: () -> Unit) {
+private fun FeaturedCard(
+    isCompleted: Boolean,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(220.dp)
             .padding(20.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.Gray.copy(alpha = 0.2f)) // Placeholder for image
+            .background(DeepNavy)
             .clickable { onClick() }
     ) {
-        // Gradient Overlay
+        // Background Image
+        Image(
+            painter = painterResource(id = R.drawable.bacaan_wajib),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            alpha = 0.8f
+        )
+
+        // Gradient Overlay for readability
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f))
+                        colors = listOf(
+                            Color.Transparent,
+                            DeepNavy.copy(alpha = 0.9f)
+                        ),
+                        startY = 100f
                     )
                 )
         )
         
+        if (isCompleted) {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = "Selesai",
+                tint = SafeGreen,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .size(28.dp)
+            )
+        }
+
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -176,10 +208,10 @@ private fun FeaturedCard(onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .background(TealAccent.copy(alpha = 0.4f))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .background(Cerulean)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                Text("BACAAN WAJIB", color = TealAccent, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text("BACAAN WAJIB", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -193,54 +225,13 @@ private fun FeaturedCard(onClick: () -> Unit) {
     }
 }
 
-@Composable
-private fun ProgressSection(completedCount: Int, totalCount: Int) {
-    val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
-    
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(CardBg)
-            .padding(20.dp)
-    ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Progress Literasi", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("$completedCount / $totalCount selesai", color = TealAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(CircleShape),
-                color = TealAccent,
-                trackColor = Color.White.copy(alpha = 0.1f)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                "Selesaikan semua materi untuk jadi pengguna digital yang aman",
-                color = Slate400,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
-        }
-    }
-}
 
 @Composable
 private fun CategoryFilters(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit
 ) {
-    val categories = listOf("Semua", "Phishing", "Rekayasa Sosial", "QRIS Palsu")
+    val categories = listOf("Semua", "Phishing", "Keamanan", "Rekayasa Sosial", "QRIS Palsu", "Hukum", "Bisnis", "Teknis")
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -264,8 +255,8 @@ private fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) TealAccent else Color.White.copy(alpha = 0.1f)
-    val textColor = if (isSelected) Color(0xFF0B1628) else Slate400
+    val bgColor = if (isSelected) Cerulean else DeepNavy.copy(alpha = 0.05f)
+    val textColor = if (isSelected) Color.White else Slate500
 
     Box(
         modifier = Modifier
@@ -286,6 +277,7 @@ private fun FilterChip(
 @Composable
 private fun EducationCard(
     item: EducationItem,
+    isCompleted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -293,20 +285,45 @@ private fun EducationCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(CardBg)
+            .background(CardWhite)
+            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Image Placeholder
             Box(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White.copy(alpha = 0.05f)),
+                    .background(DeepNavy.copy(alpha = 0.05f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(if (item.type == "KUIS") "📝" else "📄", fontSize = 24.sp)
+                if (item.imageResId != null) {
+                    Image(
+                        painter = painterResource(id = item.imageResId),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(if (item.type == "KUIS") "📝" else "📄", fontSize = 24.sp)
+                }
+                
+                if (isCompleted) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -316,10 +333,10 @@ private fun EducationCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .background(if (item.type == "KUIS") Color(0xFFF59E0B).copy(alpha = 0.2f) else Color(0xFF7C3AED).copy(alpha = 0.2f))
+                            .background(if (item.type == "KUIS") WarningYellow.copy(alpha = 0.1f) else YaleBlue.copy(alpha = 0.1f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(item.type, color = if (item.type == "KUIS") Color(0xFFF59E0B) else Color(0xFFA78BFA), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(item.type, color = if (item.type == "KUIS") WarningYellow else YaleBlue, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(item.duration, color = Slate500, fontSize = 11.sp)
@@ -329,7 +346,7 @@ private fun EducationCard(
                 
                 Text(
                     text = item.title,
-                    color = Color.White,
+                    color = PrussianBlue,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
@@ -341,9 +358,18 @@ private fun EducationCard(
                 
                 Text(
                     text = item.category,
-                    color = TealAccent,
+                    color = Cerulean,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
+                )
+            }
+            
+            if (isCompleted) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Selesai",
+                    tint = SafeGreen,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

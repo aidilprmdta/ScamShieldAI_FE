@@ -27,14 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val HighRiskColor = Color(0xFFEF4444)
-private val MediumRiskColor = Color(0xFFF59E0B)
-private val LowRiskColor = Color(0xFF22C55E)
-private val Slate400 = Color(0xFF94A3B8)
-private val Slate500 = Color(0xFF64748B)
+import com.example.scamshieldai.ui.theme.*
 
 data class HistoryItem(
     val id: String,
@@ -71,73 +64,78 @@ fun HistoryScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
-            .statusBarsPadding()
+            .background(WhiteBackground)
     ) {
-        // Header
-        Row(
+        // New Hero Header for History
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(YaleBlue)
+                .statusBarsPadding()
+                .padding(bottom = 32.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "Riwayat Deteksi",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${historyList.size} total pemindaian",
-                    color = Slate400,
-                    fontSize = 14.sp
-                )
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Riwayat Deteksi",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Ringkasan ancaman yang diblokir",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Horizontal Stats
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCardHistory(
+                        count = stats[RiskLevel.HIGH] ?: 0,
+                        label = "Tinggi",
+                        color = DangerRed,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCardHistory(
+                        count = stats[RiskLevel.MEDIUM] ?: 0,
+                        label = "Sedang",
+                        color = WarningYellow,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCardHistory(
+                        count = stats[RiskLevel.LOW] ?: 0,
+                        label = "Aman",
+                        color = SafeGreen,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            contentPadding = PaddingValues(top = 24.dp, bottom = 110.dp)
         ) {
-            // Stats Section
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    StatCard(
-                        count = stats[RiskLevel.HIGH] ?: 0,
-                        label = "Tinggi",
-                        color = HighRiskColor,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatCard(
-                        count = stats[RiskLevel.MEDIUM] ?: 0,
-                        label = "Sedang",
-                        color = MediumRiskColor,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatCard(
-                        count = stats[RiskLevel.LOW] ?: 0,
-                        label = "Aman",
-                        color = LowRiskColor,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
             // Filter Chips
             item {
                 LazyRow(
@@ -171,31 +169,32 @@ fun HistoryScreen(
 }
 
 @Composable
-private fun StatCard(
+private fun StatCardHistory(
     count: Int,
     label: String,
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Surface(
+        color = Color.White.copy(alpha = 0.08f),
+        shape = RoundedCornerShape(20.dp),
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(color.copy(alpha = 0.1f))
-            .border(1.dp, color.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = count.toString(),
                 color = color,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold
             )
             Text(
                 text = label,
-                color = Slate400,
-                fontSize = 12.sp
+                color = Color.White.copy(alpha = 0.6f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -207,8 +206,8 @@ private fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) Color(0xFF14B8A6) else Color.White.copy(alpha = 0.1f)
-    val textColor = if (isSelected) Color.White else Slate400
+    val bgColor = if (isSelected) Cerulean else DeepNavy.copy(alpha = 0.05f)
+    val textColor = if (isSelected) Color.White else Slate500
 
     Box(
         modifier = Modifier
@@ -235,9 +234,9 @@ private fun HistoryCard(
 ) {
     val result = item.result
     val riskColor = when (result.riskLevel) {
-        RiskLevel.HIGH -> HighRiskColor
-        RiskLevel.MEDIUM -> MediumRiskColor
-        RiskLevel.LOW -> LowRiskColor
+        RiskLevel.HIGH -> DangerRed
+        RiskLevel.MEDIUM -> WarningYellow
+        RiskLevel.LOW -> SafeGreen
     }
     
     val riskLabel = when (result.riskLevel) {
@@ -254,19 +253,20 @@ private fun HistoryCard(
         else -> Icons.Outlined.Link
     }
 
-    val iconBg = when (result.type) {
-        "chat" -> Color(0xFF3B82F6)
-        "link" -> Color(0xFF10B981)
+    val iconColor = when (result.type) {
+        "chat" -> Cerulean
+        "link" -> SafeGreen
         "screenshot" -> Color(0xFFA855F7)
-        "qr" -> Color(0xFFF59E0B)
-        else -> Color(0xFF3B82F6)
+        "qr" -> WarningYellow
+        else -> Cerulean
     }
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(CardBg)
+            .background(CardWhite)
+            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
@@ -276,10 +276,10 @@ private fun HistoryCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(iconBg.copy(alpha = 0.2f)),
+                    .background(iconColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(imageVector = icon, contentDescription = null, tint = iconBg, modifier = Modifier.size(24.dp))
+                Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -299,7 +299,7 @@ private fun HistoryCard(
                 
                 Text(
                     text = result.inputSummary,
-                    color = Color.White,
+                    color = PrussianBlue,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,

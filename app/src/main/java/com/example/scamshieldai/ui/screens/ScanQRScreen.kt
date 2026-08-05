@@ -25,10 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val OrangeAccent = Color(0xFFF59E0B)
-private val Slate400 = Color(0xFF94A3B8)
+import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun ScanQRScreen(
@@ -124,10 +121,9 @@ fun ScanQRScreen(
                 Box(
                     modifier = Modifier
                         .size(260.dp)
-                        .border(2.dp, OrangeAccent, RoundedCornerShape(24.dp))
+                        .border(2.dp, WarningYellow, RoundedCornerShape(24.dp))
                         .background(Color.Transparent)
                 ) {
-                    // Corner highlights or animations could go here
                 }
             }
 
@@ -135,7 +131,7 @@ fun ScanQRScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgDeepNavy.copy(alpha = 0.9f))
+                    .background(WhiteBackground.copy(alpha = 0.95f))
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -143,15 +139,16 @@ fun ScanQRScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(OrangeAccent.copy(alpha = 0.1f))
+                        .background(WarningYellow.copy(alpha = 0.05f))
+                        .border(1.dp, WarningYellow.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = OrangeAccent, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Info, contentDescription = null, tint = WarningYellow, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         "Arahkan kamera ke kode QR. AI akan memverifikasi keamanan tautan di dalamnya secara otomatis.",
-                        color = OrangeAccent,
+                        color = PrussianBlue,
                         fontSize = 13.sp,
                         lineHeight = 18.sp
                     )
@@ -165,7 +162,7 @@ fun ScanQRScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = OrangeAccent)
+                    colors = ButtonDefaults.buttonColors(containerColor = Cerulean)
                 ) {
                     Text("Coba Simulasi Scan QR", color = Color.White, fontWeight = FontWeight.Bold)
                 }

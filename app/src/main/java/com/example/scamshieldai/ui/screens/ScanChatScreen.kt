@@ -1,9 +1,11 @@
 package com.example.scamshieldai.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,19 +18,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val InfoBg = Color(0xFF1E3A8A).copy(alpha = 0.3f)
-private val InfoText = Color(0xFF93C5FD)
-private val TealAccent = Color(0xFF2DD4BF)
-private val Slate400 = Color(0xFF94A3B8)
+import com.example.scamshieldai.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,37 +48,44 @@ fun ScanChatScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
-            .statusBarsPadding()
+            .background(WhiteBackground)
     ) {
-        // Header
-        Row(
+        // Hero Header for Scan Chat
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(YaleBlue)
+                .statusBarsPadding()
+                .padding(bottom = 32.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "Scan Chat",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Tempel teks pesan mencurigakan",
-                    color = Slate400,
-                    fontSize = 14.sp
-                )
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Scan Chat",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Tempel teks pesan mencurigakan",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
         }
 
@@ -91,25 +95,27 @@ fun ScanChatScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 20.dp)
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
             // Info Box
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(InfoBg)
+                    .background(YaleBlue.copy(alpha = 0.05f))
+                    .border(1.dp, YaleBlue.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
                     .padding(16.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
-                    tint = InfoText,
+                    tint = YaleBlue,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Salin seluruh isi pesan chat, SMS, atau email mencurigakan, lalu tempel di bawah ini. Semakin lengkap teks, semakin akurat analisis AI.",
-                    color = InfoText,
+                    color = YaleBlue,
                     fontSize = 13.sp,
                     lineHeight = 20.sp
                 )
@@ -124,22 +130,23 @@ fun ScanChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clip(RoundedCornerShape(20.dp)),
+                    .clip(RoundedCornerShape(20.dp))
+                    .border(1.dp, YaleBlue.copy(alpha = 0.1f), RoundedCornerShape(20.dp)),
                 placeholder = {
                     Text(
                         "Tempel teks pesan di sini...",
-                        color = Slate400,
+                        color = Slate500.copy(alpha = 0.6f),
                         fontSize = 16.sp
                     )
                 },
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = CardBg,
-                    unfocusedContainerColor = CardBg,
+                    focusedContainerColor = CardWhite,
+                    unfocusedContainerColor = CardWhite,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = TealAccent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    cursorColor = Cerulean,
+                    focusedTextColor = PrussianBlue,
+                    unfocusedTextColor = PrussianBlue
                 )
             )
 
@@ -153,7 +160,7 @@ fun ScanChatScreen(
             ) {
                 Text(
                     text = "${inputText.length} karakter",
-                    color = Slate400,
+                    color = Slate500,
                     fontSize = 13.sp
                 )
                 Row(
@@ -165,13 +172,13 @@ fun ScanChatScreen(
                     Icon(
                         imageVector = Icons.Default.ContentPaste,
                         contentDescription = null,
-                        tint = TealAccent,
+                        tint = Cerulean,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "Tempel dari clipboard",
-                        color = TealAccent,
+                        color = Cerulean,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -183,7 +190,7 @@ fun ScanChatScreen(
             // Sample Modes Section
             Text(
                 text = "COBA CONTOH MODUS PENIPUAN",
-                color = Slate400,
+                color = Slate500,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
@@ -196,13 +203,14 @@ fun ScanChatScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(CardBg)
+                        .background(CardWhite)
+                        .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
                         .clickable { inputText = example }
                         .padding(16.dp)
                 ) {
                     Text(
                         text = example,
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = PrussianBlue.copy(alpha = 0.8f),
                         fontSize = 13.sp,
                         lineHeight = 20.sp,
                         maxLines = 2
@@ -219,21 +227,22 @@ fun ScanChatScreen(
                 .padding(20.dp)
                 .navigationBarsPadding()
         ) {
-            Button(
-                onClick = { if (inputText.isNotBlank()) onAnalyze(inputText) },
+            val isEnabled = inputText.isNotBlank()
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1E293B),
-                    disabledContainerColor = Color(0xFF1E293B).copy(alpha = 0.5f)
-                ),
-                enabled = inputText.isNotBlank()
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        if (isEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
+                        else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
+                    )
+                    .clickable(enabled = isEnabled) { onAnalyze(inputText) },
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Analisis Sekarang",
-                    color = if (inputText.isNotBlank()) Color.White else Color.White.copy(alpha = 0.3f),
+                    color = if (isEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

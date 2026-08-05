@@ -1,5 +1,6 @@
 package com.example.scamshieldai.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,16 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.model.EducationContent
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val TealAccent = Color(0xFF2DD4BF)
-private val Slate500 = Color(0xFF64748B)
+import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun EducationDetailScreen(
@@ -39,7 +38,7 @@ fun EducationDetailScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
+            .background(WhiteBackground)
             .statusBarsPadding()
     ) {
         // Header
@@ -54,11 +53,11 @@ fun EducationDetailScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
+                    .background(DeepNavy.copy(alpha = 0.05f))
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = PrussianBlue)
             }
-            Text("Artikel", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("Artikel", color = PrussianBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Text(content.duration, color = Slate500, fontSize = 14.sp)
         }
 
@@ -72,8 +71,17 @@ fun EducationDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp)
-                    .background(Color.Gray.copy(alpha = 0.2f)) // Image placeholder
-            )
+                    .background(DeepNavy.copy(alpha = 0.05f))
+            ) {
+                if (content.imageResId != null) {
+                    Image(
+                        painter = painterResource(id = content.imageResId),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
 
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Spacer(modifier = Modifier.height(24.dp))
@@ -82,17 +90,17 @@ fun EducationDetailScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(TealAccent.copy(alpha = 0.1f))
+                        .background(Cerulean.copy(alpha = 0.1f))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-                    Text(content.category, color = TealAccent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(content.category, color = Cerulean, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = content.title,
-                    color = Color.White,
+                    color = PrussianBlue,
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     lineHeight = 34.sp
@@ -103,7 +111,7 @@ fun EducationDetailScreen(
                 content.description.forEach { paragraph ->
                     Text(
                         text = paragraph,
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = PrussianBlue.copy(alpha = 0.8f),
                         fontSize = 15.sp,
                         lineHeight = 26.sp
                     )
@@ -125,7 +133,7 @@ fun EducationDetailScreen(
                         .fillMaxWidth()
                         .height(56.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Brush.linearGradient(listOf(Color(0xFF0D9488), Color(0xFF14B8A6))))
+                        .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
                         .clickable { onBack() },
                     contentAlignment = Alignment.Center
                 ) {
@@ -149,7 +157,8 @@ private fun ProtectionTipsCard(tips: List<String>) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(CardBg)
+            .background(CardWhite)
+            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
             .padding(24.dp)
     ) {
         Column {
@@ -158,7 +167,7 @@ private fun ProtectionTipsCard(tips: List<String>) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     "Tips Perlindungan",
-                    color = Color.White,
+                    color = PrussianBlue,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -183,13 +192,13 @@ private fun NumberedTipItem(number: Int, text: String) {
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF0D9488).copy(alpha = 0.2f))
-                .border(1.dp, Color(0xFF0D9488).copy(alpha = 0.4f), CircleShape),
+                .background(Cerulean.copy(alpha = 0.1f))
+                .border(1.dp, Cerulean.copy(alpha = 0.2f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = number.toString(),
-                color = TealAccent,
+                color = Cerulean,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -197,7 +206,7 @@ private fun NumberedTipItem(number: Int, text: String) {
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = text,
-            color = Color.White.copy(alpha = 0.8f),
+            color = PrussianBlue.copy(alpha = 0.8f),
             fontSize = 14.sp,
             lineHeight = 22.sp
         )

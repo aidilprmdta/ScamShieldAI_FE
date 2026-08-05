@@ -1,39 +1,38 @@
-# Rencana Implementasi - Bottom Navigation Bar ScamShield AI (Update: Profil)
+# Rencana Perbaikan Bug Navbar & Restorasi Desain Beranda
 
-Rencana ini merinci penambahan bilah navigasi bawah (*Bottom Navigation Bar*) untuk mempermudah akses antar fitur utama aplikasi: Beranda, Riwayat, Edukasi, dan Profil.
+Memperbaiki masalah Navbar yang tidak merespons klik (unresponsive) setelah navigasi dan mengembalikan desain Beranda ke versi lama namun tetap terhubung ke Riwayat Deteksi.
 
-## Komponen Utama UI
+## Analisis Bug
 
-1. **NavigationBar (Material 3)**: Bilah navigasi modern di bagian bawah layar.
-2. **Item Navigasi**:
-    - **Beranda**: Menggunakan ikon `Home`.
-    - **Riwayat**: Menggunakan ikon `History`.
-    - **Edukasi**: Menggunakan ikon `School` (Pusat Edukasi).
-    - **Profil**: Menggunakan ikon `Person` (Pengaturan Akun).
-3. **Logika Visibilitas**: Navbar hanya akan muncul pada empat layar utama tersebut dan akan disembunyikan pada layar fungsional lainnya (seperti saat analisis AI atau input data) untuk menjaga fokus pengguna.
+> [!CAUTION]
+> Masalah "unresponsive" pada Navbar kemungkinan besar disebabkan oleh tumpang tindih dengan **system gesture bar** di bagian bawah layar. Karena `navigationBarsPadding()` dihapus sebelumnya, Navbar berada terlalu rendah sehingga sistem Android mengambil alih input sentuhan untuk navigasi gestur (home/back).
 
-## Strategi Teknis
+## Proposed Changes
 
-- **State Tracking**: Melacak rute aktif menggunakan `navController.currentBackStackEntryAsState()` untuk menyoroti item yang sedang dipilih.
-- **Scaffold Integration**: Membungkus `NavHost` di dalam `Scaffold` dan menempatkan `NavigationBar` di parameter `bottomBar`.
-- **Navigation Options**: Menggunakan `launchSingleTop = true` dan `restoreState = true` saat berpindah tab agar performa aplikasi tetap optimal.
+### UI Components
 
-## Perubahan yang Diusulkan
+#### [MODIFY] [FloatingNavBar.kt](file:///C:/Users/Martrio/AndroidStudioProjects/ScamShieldAI/app/src/main/java/com/example/scamshieldai/ui/components/FloatingNavBar.kt)
+- Menambahkan kembali **`navigationBarsPadding()`** agar Navbar selalu berada di atas area navigasi sistem.
+- Menambahkan **`zIndex(1f)`** untuk memastikan Navbar berada di lapisan teratas di atas konten `NavHost`.
+- Menyesuaikan padding vertikal agar posisi terlihat proporsional dan mudah diklik.
 
-### UI Screens
-
-#### [NEW] [ProfileScreen.kt](file:///C:/Users/Martrio/AndroidStudioProjects/ScamShieldAI/app/src/main/java/com/example/scamshieldai/ui/screens/ProfileScreen.kt)
-- Membuat layar profil (saat ini sebagai placeholder) yang menampilkan informasi pengguna dan pengaturan dasar.
-
-### Integrasi Utama
+### Core App Logic
 
 #### [MODIFY] [MainActivity.kt](file:///C:/Users/Martrio/AndroidStudioProjects/ScamShieldAI/app/src/main/java/com/example/scamshieldai/MainActivity.kt)
-- Mendefinisikan struktur item navigasi bawah (Home, History, Education, Profile).
-- Implementasi `Scaffold` dengan `NavigationBar`.
-- Menyesuaikan rute navigasi untuk menyertakan layar Profil.
+- Memastikan rute `"education_center"` menampilkan Navbar dengan benar.
+- Memastikan tombol lonceng di `HomeScreen` memanggil `onHistoryClick` yang mengarah ke rute `"history"`.
+- Memperkuat logika penentuan `selectedRoute` agar Navbar selalu sinkron dengan halaman yang aktif.
 
-## Rencana Verifikasi
+### Screens
 
-1. **Navigasi Tab**: Memastikan perpindahan antar empat menu utama berjalan lancar.
-2. **Indikator Aktif**: Memastikan ikon di navbar menyoroti tab yang benar.
-3. **Visibilitas**: Memastikan navbar menghilang pada alur proses (Scan/Analyzing/Result).
+#### [MODIFY] [HomeScreen.kt](file:///C:/Users/Martrio/AndroidStudioProjects/ScamShieldAI/app/src/main/java/com/example/scamshieldai/ui/screens/HomeScreen.kt)
+- Memastikan penggunaan desain lama: Background gradient (`DeepNavy` ke `YaleBlue`) pada `HeroSection`.
+- Memastikan tombol lonceng (notifikasi) terhubung ke fungsi `onHistoryClick`.
+
+## Verification Plan
+
+### Manual Verification
+- Menjalankan aplikasi dan menekan banner "Edukasi".
+- Memastikan di halaman "Pusat Edukasi", tombol "Beranda" pada Navbar dapat diklik kembali.
+- Memastikan tombol lonceng di Beranda membuka halaman "Riwayat Deteksi".
+- Memastikan Navbar tidak terpotong atau tertutup oleh bilah navigasi sistem.

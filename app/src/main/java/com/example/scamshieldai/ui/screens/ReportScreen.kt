@@ -24,11 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val TealAccent = Color(0xFF2DD4BF)
-private val Slate400 = Color(0xFF94A3B8)
+import com.example.scamshieldai.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,31 +54,45 @@ fun ReportScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
-            .statusBarsPadding()
+            .background(WhiteBackground)
     ) {
-        // Header
-        Row(
+        // Hero Header for Report
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(YaleBlue)
+                .statusBarsPadding()
+                .padding(bottom = 32.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Laporkan Ancaman",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Bantu komunitas terhindar dari scam",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "Laporkan Ancaman",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
 
         Column(
@@ -91,11 +101,11 @@ fun ReportScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             Text(
                 text = "Bantu kami melindungi komunitas dengan melaporkan temuan penipuan ini.",
-                color = Slate400,
+                color = Slate500,
                 fontSize = 15.sp,
                 lineHeight = 22.sp
             )
@@ -104,7 +114,7 @@ fun ReportScreen(
 
             Text(
                 text = "PILIH KATEGORI",
-                color = Slate400,
+                color = Slate500,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
@@ -121,10 +131,10 @@ fun ReportScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(if (isSelected) TealAccent.copy(alpha = 0.1f) else CardBg)
+                        .background(if (isSelected) Cerulean.copy(alpha = 0.05f) else CardWhite)
                         .border(
                             width = 1.dp,
-                            color = if (isSelected) TealAccent else Color.Transparent,
+                            color = if (isSelected) Cerulean else YaleBlue.copy(alpha = 0.05f),
                             shape = RoundedCornerShape(16.dp)
                         )
                         .clickable { selectedCategory = category }
@@ -135,10 +145,10 @@ fun ReportScreen(
                             RadioButton(
                                 selected = isSelected,
                                 onClick = { selectedCategory = category },
-                                colors = RadioButtonDefaults.colors(selectedColor = TealAccent)
+                                colors = RadioButtonDefaults.colors(selectedColor = Cerulean)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = category, color = Color.White, fontSize = 15.sp)
+                            Text(text = category, color = PrussianBlue, fontSize = 15.sp)
                         }
                         
                         if (isOther && isSelected) {
@@ -149,14 +159,14 @@ fun ReportScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp),
-                                placeholder = { Text("Sebutkan kategori lainnya...", fontSize = 14.sp, color = Slate400.copy(alpha = 0.6f)) },
+                                placeholder = { Text("Sebutkan kategori lainnya...", fontSize = 14.sp, color = Slate500.copy(alpha = 0.6f)) },
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = TealAccent,
-                                    unfocusedIndicatorColor = Slate400.copy(alpha = 0.3f),
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White
+                                    focusedIndicatorColor = Cerulean,
+                                    unfocusedIndicatorColor = Slate500.copy(alpha = 0.2f),
+                                    focusedTextColor = PrussianBlue,
+                                    unfocusedTextColor = PrussianBlue
                                 ),
                                 singleLine = true
                             )
@@ -169,7 +179,7 @@ fun ReportScreen(
 
             Text(
                 text = "DETAIL TAMBAHAN (OPSIONAL)",
-                color = Slate400,
+                color = Slate500,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
@@ -183,15 +193,16 @@ fun ReportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-                placeholder = { Text("Ceritakan singkat kronologinya...", color = Slate400.copy(alpha = 0.6f)) },
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(16.dp)),
+                placeholder = { Text("Ceritakan singkat kronologinya...", color = Slate500.copy(alpha = 0.6f)) },
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = CardBg,
-                    unfocusedContainerColor = CardBg,
+                    focusedContainerColor = CardWhite,
+                    unfocusedContainerColor = CardWhite,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedTextColor = PrussianBlue,
+                    unfocusedTextColor = PrussianBlue
                 )
             )
             
@@ -212,15 +223,15 @@ fun ReportScreen(
                     .height(56.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(
-                        if (isEnabled) Brush.linearGradient(listOf(Color(0xFF0D9488), Color(0xFF14B8A6)))
-                        else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.05f), Color.White.copy(alpha = 0.05f)))
+                        if (isEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
+                        else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
                     )
                     .clickable(enabled = isEnabled) { isSubmitted = true },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "Kirim Laporan",
-                    color = if (isEnabled) Color.White else Color.White.copy(alpha = 0.2f),
+                    color = if (isEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -234,7 +245,7 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
+            .background(WhiteBackground)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -243,13 +254,13 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(TealAccent.copy(alpha = 0.1f)),
+                .background(Cerulean.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = null,
-                tint = TealAccent,
+                tint = Cerulean,
                 modifier = Modifier.size(64.dp)
             )
         }
@@ -258,7 +269,7 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
 
         Text(
             text = "Laporan Terkirim",
-            color = Color.White,
+            color = PrussianBlue,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
@@ -267,7 +278,7 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
 
         Text(
             text = "Terima kasih! Kontribusi Anda membantu AI kami menjadi lebih pintar dalam mendeteksi ancaman serupa di masa depan.",
-            color = Slate400,
+            color = Slate500,
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp,
@@ -282,9 +293,9 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B))
+            colors = ButtonDefaults.buttonColors(containerColor = DeepNavy.copy(alpha = 0.05f))
         ) {
-            Text("Kembali ke Beranda", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("Kembali ke Beranda", color = PrussianBlue, fontWeight = FontWeight.Bold)
         }
     }
 }

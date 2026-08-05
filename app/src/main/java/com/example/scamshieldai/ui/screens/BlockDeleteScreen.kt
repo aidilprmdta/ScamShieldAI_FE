@@ -22,11 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val HighRiskColor = Color(0xFFEF4444)
-private val TealAccent = Color(0xFF2DD4BF)
-private val Slate400 = Color(0xFF94A3B8)
+import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun BlockDeleteScreen(
@@ -36,7 +32,7 @@ fun BlockDeleteScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
+            .background(WhiteBackground)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -46,14 +42,14 @@ fun BlockDeleteScreen(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(HighRiskColor.copy(alpha = 0.1f))
-                .border(2.dp, HighRiskColor.copy(alpha = 0.3f), CircleShape),
+                .background(DangerRed.copy(alpha = 0.05f))
+                .border(2.dp, DangerRed.copy(alpha = 0.1f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Shield,
                 contentDescription = null,
-                tint = HighRiskColor,
+                tint = DangerRed,
                 modifier = Modifier.size(56.dp)
             )
             
@@ -64,7 +60,7 @@ fun BlockDeleteScreen(
                     .offset(x = (-8).dp, y = (-8).dp)
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF22C55E)),
+                    .background(SafeGreen),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -80,7 +76,7 @@ fun BlockDeleteScreen(
 
         Text(
             text = "Tindakan Berhasil",
-            color = Color.White,
+            color = PrussianBlue,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
@@ -90,7 +86,7 @@ fun BlockDeleteScreen(
 
         Text(
             text = "Nomor pengirim telah diblokir dan data pesan berbahaya telah dihapus dari riwayat aktif Anda.",
-            color = Slate400,
+            color = Slate500,
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp,
@@ -105,7 +101,7 @@ fun BlockDeleteScreen(
                 .fillMaxWidth()
                 .height(56.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Brush.linearGradient(listOf(Color(0xFF0D9488), Color(0xFF14B8A6))))
+                .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
                 .clickable { onBackToHome() },
             contentAlignment = Alignment.Center
         ) {

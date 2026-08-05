@@ -25,11 +25,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-
-private val BgDeepNavy = Color(0xFF0B1628).copy(alpha = 0.95f)
-private val Teal400 = Color(0xFF2DD4BF)
-private val Teal500 = Color(0xFF14B8A6)
-private val Slate400 = Color(0xFF94A3B8)
+import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun AnalyzingOverlay(
@@ -48,7 +44,7 @@ fun AnalyzingOverlay(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
+            .background(WhiteBackground.copy(alpha = 0.95f))
             .semantics {
                 contentDescription = "Menganalisis indikator penipuan. Harap tunggu."
             },
@@ -75,7 +71,7 @@ fun AnalyzingOverlay(
                         .fillMaxSize()
                         .padding(4.dp)
                         .clip(CircleShape)
-                        .background(Teal500.copy(alpha = 0.1f))
+                        .background(Cerulean.copy(alpha = 0.1f))
                         .semantics { contentDescription = "AI Analyzing Icon" },
                     contentAlignment = Alignment.Center
                 ) {
@@ -86,7 +82,7 @@ fun AnalyzingOverlay(
             // Text Section
             Text(
                 text = "Menganalisis...",
-                color = Color.White,
+                color = PrussianBlue,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -94,7 +90,7 @@ fun AnalyzingOverlay(
 
             Text(
                 text = "AI sedang memeriksa indikator penipuan.\nHarap tunggu sebentar.",
-                color = Slate400,
+                color = Slate500,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 20.sp
@@ -130,7 +126,7 @@ private fun PulsingRing(delayMillis: Int) {
         val radius = (size.minDimension / 2) * (1f + progress * 0.2f)
         val alpha = (1f - progress) * 0.4f
         drawCircle(
-            color = Teal500,
+            color = Cerulean,
             radius = radius,
             center = center,
             style = Stroke(width = 2.dp.toPx()),
@@ -159,7 +155,7 @@ private fun SpinningIcon() {
     ) {
         // Base circle (25% opacity)
         drawCircle(
-            color = Teal400,
+            color = Cerulean,
             radius = size.minDimension / 2,
             style = Stroke(width = 3.dp.toPx()),
             alpha = 0.25f
@@ -167,7 +163,7 @@ private fun SpinningIcon() {
 
         // Progress arc (75% opacity)
         drawArc(
-            color = Teal400,
+            color = Cerulean,
             startAngle = -90f,
             sweepAngle = 90f,
             useCenter = false,
@@ -195,7 +191,7 @@ private fun BouncingDot(delayMillis: Int) {
             .offset { IntOffset(0, dy.dp.roundToPx()) }
             .size(8.dp)
             .clip(CircleShape)
-            .background(Teal400)
+            .background(Cerulean)
     )
 }
 

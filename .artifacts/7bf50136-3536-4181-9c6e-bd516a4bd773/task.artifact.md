@@ -1,21 +1,6 @@
-- [x] Setup Compose Dependencies
-- [x] Implement UI Components (Analyzing Overlay)
-- [x] Integrate into MainActivity (Initial NavHost)
-- [x] Implement Home Screen
-- [x] Implement Scan Chat Screen
-- [x] Implement Result Screen
-- [x] Implement Check Link Screen
-- [x] Implement Scan Screenshot Screen
-- [x] Implement Scan QR Screen (LIVE)
-- [x] Implement Detection History Screen
-- [x] Rebuild Education Center Screen
-- [x] Make Education Detail dynamic
-- [x] Implement Interactive Quiz & Results
-- [x] Implement Advanced Security Features (Block & Report)
-- [x] Implement Bottom Navigation & Profile
-    - [x] Create `ProfileScreen.kt`
-    - [x] Setup Navigation Items and Routes
-    - [x] Implement `Scaffold` with `NavigationBar` in `MainActivity.kt`
-    - [x] Add Navbar visibility logic
-    - [x] Connect Profile Screen to NavHost
-- [x] Verification with @Preview
+# Task: Implementasi Halaman "Tentang ScamShield AI"
+
+- [x] Membuat file `AboutScreen.kt`
+- [x] Memperbarui `ProfileScreen.kt` (Parameter & Navigasi)
+- [x] Menambahkan rute di `MainActivity.kt`
+- [x] Verifikasi & Build

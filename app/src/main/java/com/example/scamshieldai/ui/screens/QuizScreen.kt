@@ -6,8 +6,10 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.ui.theme.*
 
 data class QuizScenario(
     val id: String,
@@ -33,13 +36,6 @@ data class QuizScenario(
     val correctOptionIndices: List<Int>,
     val explanation: String
 )
-
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val TealAccent = Color(0xFF2DD4BF)
-private val Slate400 = Color(0xFF94A3B8)
-private val CorrectGreen = Color(0xFF22C55E)
-private val WrongRed = Color(0xFFEF4444)
 
 @Composable
 fun QuizScreen(
@@ -97,49 +93,68 @@ fun QuizScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
-            .statusBarsPadding()
+            .background(WhiteBackground)
     ) {
-        // Header
-        Row(
+        // Hero Header for Quiz
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(PrussianBlue)
+                .statusBarsPadding()
+                .padding(bottom = 32.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Kuis Interaktif",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Pertanyaan ${currentIndex + 1} dari ${scenarios.size}",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
-            Text("Kuis Interaktif", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Text("${currentIndex + 1}/${scenarios.size}", color = Slate400, fontSize = 14.sp)
         }
 
         LinearProgressIndicator(
             progress = { (currentIndex + 1).toFloat() / scenarios.size },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .height(4.dp)
+                .padding(top = 24.dp, start = 24.dp, end = 24.dp)
+                .height(6.dp)
                 .clip(CircleShape),
-            color = TealAccent,
-            trackColor = Color.White.copy(alpha = 0.05f)
+            color = Cerulean,
+            trackColor = DeepNavy.copy(alpha = 0.05f)
         )
 
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(scrollState)
-                .padding(24.dp)
+                .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "SKENARIO ${currentScenario.scenarioNumber}",
-                color = Slate400,
+                color = Slate500,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
@@ -149,7 +164,7 @@ fun QuizScreen(
             
             Text(
                 text = currentScenario.question,
-                color = Color.White,
+                color = PrussianBlue,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 lineHeight = 26.sp
@@ -191,13 +206,13 @@ fun QuizScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF14B8A6).copy(alpha = 0.1f))
-                        .border(1.dp, Color(0xFF14B8A6).copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                        .background(Cerulean.copy(alpha = 0.05f))
+                        .border(1.dp, Cerulean.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
                         .padding(20.dp)
                 ) {
                     Text(
                         text = currentScenario.explanation,
-                        color = TealAccent,
+                        color = YaleBlue,
                         fontSize = 14.sp,
                         lineHeight = 22.sp
                     )
@@ -221,8 +236,8 @@ fun QuizScreen(
                     .height(56.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(
-                        if (isButtonEnabled) Brush.linearGradient(listOf(Color(0xFF0D9488), Color(0xFF14B8A6)))
-                        else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.05f), Color.White.copy(alpha = 0.05f)))
+                        if (isButtonEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
+                        else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
                     )
                     .clickable(enabled = isButtonEnabled) {
                         if (!isConfirmed) {
@@ -243,7 +258,7 @@ fun QuizScreen(
             ) {
                 Text(
                     text = buttonText,
-                    color = if (isButtonEnabled) Color.White else Color.White.copy(alpha = 0.2f),
+                    color = if (isButtonEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -272,7 +287,7 @@ private fun QuizResultContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
+            .background(WhiteBackground)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -283,11 +298,11 @@ private fun QuizResultContent(
                 .size(140.dp)
                 .drawBehind {
                     drawCircle(
-                        color = TealAccent.copy(alpha = 0.1f),
+                        color = Cerulean.copy(alpha = 0.1f),
                         radius = (size.minDimension / 2) * scale
                     )
                 }
-                .border(2.dp, TealAccent.copy(alpha = 0.3f), CircleShape),
+                .border(2.dp, Cerulean.copy(alpha = 0.3f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text("🎉", fontSize = 64.sp)
@@ -297,7 +312,7 @@ private fun QuizResultContent(
 
         Text(
             text = "Kuis Selesai!",
-            color = Color.White,
+            color = PrussianBlue,
             fontSize = 32.sp,
             fontWeight = FontWeight.ExtraBold
         )
@@ -306,13 +321,13 @@ private fun QuizResultContent(
 
         Text(
             text = "Skor Anda:",
-            color = Slate400,
+            color = Slate500,
             fontSize = 16.sp
         )
 
         Text(
             text = "$score / $total",
-            color = TealAccent,
+            color = Cerulean,
             fontSize = 64.sp,
             fontWeight = FontWeight.Black
         )
@@ -322,7 +337,7 @@ private fun QuizResultContent(
         Text(
             text = if (score == total) "Luar biasa! Anda memiliki kewaspadaan digital yang sangat baik."
                    else "Bagus! Terus berlatih untuk meningkatkan kewaspadaan Anda.",
-            color = Color.White.copy(alpha = 0.7f),
+            color = PrussianBlue.copy(alpha = 0.7f),
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp,
@@ -337,7 +352,7 @@ private fun QuizResultContent(
                 .fillMaxWidth()
                 .height(56.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Brush.linearGradient(listOf(Color(0xFF0D9488), Color(0xFF14B8A6))))
+                .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
                 .clickable { onBackToEducation() },
             contentAlignment = Alignment.Center
         ) {
@@ -360,16 +375,16 @@ private fun QuizOptionCard(
     onClick: () -> Unit
 ) {
     val borderColor = when {
-        isCorrect == true -> CorrectGreen
-        isWrong == true -> WrongRed
-        isSelected -> TealAccent
-        else -> Color.White.copy(alpha = 0.1f)
+        isCorrect == true -> SafeGreen
+        isWrong == true -> DangerRed
+        isSelected -> Cerulean
+        else -> DeepNavy.copy(alpha = 0.1f)
     }
     
     val bgColor = when {
-        isCorrect == true -> CorrectGreen.copy(alpha = 0.1f)
-        isWrong == true -> WrongRed.copy(alpha = 0.1f)
-        else -> CardBg
+        isCorrect == true -> SafeGreen.copy(alpha = 0.05f)
+        isWrong == true -> DangerRed.copy(alpha = 0.05f)
+        else -> CardWhite
     }
 
     Box(
@@ -386,7 +401,7 @@ private fun QuizOptionCard(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(CircleShape)
-                    .background(if (isCorrect == true || isSelected) borderColor.copy(alpha = 0.2f) else Color.Transparent)
+                    .background(if (isCorrect == true || isSelected) borderColor.copy(alpha = 0.1f) else Color.Transparent)
                     .border(1.5.dp, borderColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -404,7 +419,7 @@ private fun QuizOptionCard(
             
             Text(
                 text = text,
-                color = if (isCorrect == true || isWrong == true || isSelected) Color.White else Color.White.copy(alpha = 0.7f),
+                color = if (isCorrect == true || isWrong == true || isSelected) PrussianBlue else PrussianBlue.copy(alpha = 0.7f),
                 fontSize = 15.sp,
                 lineHeight = 22.sp
             )

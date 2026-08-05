@@ -4,9 +4,11 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.ui.theme.*
 
 data class ScanResult(
     val type: String, // "chat", "screenshot", "link", "qr"
@@ -45,14 +48,6 @@ enum class RiskLevel {
     LOW, MEDIUM, HIGH
 }
 
-private val BgDeepNavy = Color(0xFF0B1628)
-private val CardBg = Color(0xFF1E293B).copy(alpha = 0.4f)
-private val HighRiskColor = Color(0xFFEF4444)
-private val MediumRiskColor = Color(0xFFF59E0B)
-private val LowRiskColor = Color(0xFF22C55E)
-private val Slate400 = Color(0xFF94A3B8)
-private val Slate500 = Color(0xFF64748B)
-
 @Composable
 fun ResultScreen(
     result: ScanResult,
@@ -65,9 +60,9 @@ fun ResultScreen(
     val scrollState = rememberScrollState()
     val riskConfig = remember(result.riskLevel) {
         when (result.riskLevel) {
-            RiskLevel.HIGH -> Triple(HighRiskColor, "Risiko Tinggi", "⚠️")
-            RiskLevel.MEDIUM -> Triple(MediumRiskColor, "Risiko Sedang", "🟡")
-            RiskLevel.LOW -> Triple(LowRiskColor, "Aman", "✅")
+            RiskLevel.HIGH -> Triple(DangerRed, "Risiko Tinggi", "⚠️")
+            RiskLevel.MEDIUM -> Triple(WarningYellow, "Risiko Sedang", "🟡")
+            RiskLevel.LOW -> Triple(SafeGreen, "Aman", "✅")
         }
     }
 
@@ -83,33 +78,53 @@ fun ResultScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(BgDeepNavy)
-            .statusBarsPadding()
+            .background(WhiteBackground)
     ) {
-        // Header
-        Row(
+        // Hero Header for Result
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(YaleBlue)
+                .statusBarsPadding()
+                .padding(bottom = 32.dp)
         ) {
-            IconButton(
-                onClick = onBackToHome,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-            }
-            Text("Hasil Analisis", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            IconButton(
-                onClick = onHistoryClick,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.1f))
-            ) {
-                Icon(Icons.Default.History, contentDescription = "Riwayat", tint = Color.White)
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onBackToHome,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Hasil Analisis",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Deteksi ancaman bertenaga AI",
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    }
+                    IconButton(
+                        onClick = onHistoryClick,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Icon(Icons.Default.History, contentDescription = "Riwayat", tint = Color.White)
+                    }
+                }
             }
         }
 
@@ -121,7 +136,7 @@ fun ResultScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-
+            
             // Risk Gauge
             RiskGauge(score = result.riskScore, color = riskConfig.first)
 
@@ -160,7 +175,7 @@ fun ResultScreen(
             ResultSection(title = "INPUT YANG DIANALISIS") {
                 Text(
                     text = result.inputSummary,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = PrussianBlue.copy(alpha = 0.8f),
                     fontSize = 14.sp,
                     lineHeight = 22.sp
                 )
@@ -193,11 +208,11 @@ fun ResultScreen(
             ResultSection(
                 title = "Penjelasan AI",
                 icon = Icons.Default.Info,
-                iconColor = Slate400
+                iconColor = Cerulean
             ) {
                 Text(
                     text = result.explanation,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = PrussianBlue.copy(alpha = 0.8f),
                     fontSize = 13.sp,
                     lineHeight = 20.sp
                 )
@@ -212,7 +227,7 @@ fun ResultScreen(
             ) {
                 Text(
                     text = result.recommendation,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = PrussianBlue.copy(alpha = 0.8f),
                     fontSize = 13.sp,
                     lineHeight = 20.sp
                 )
@@ -226,17 +241,17 @@ fun ResultScreen(
                     onClick = onBlockDeleteClick,
                     modifier = Modifier.weight(1f).height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = HighRiskColor.copy(alpha = 0.15f))
+                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.1f))
                 ) {
-                    Text("🚫 Blokir & Hapus", color = HighRiskColor, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("🚫 Blokir & Hapus", color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
                 Button(
                     onClick = onReportClick,
                     modifier = Modifier.weight(1f).height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f))
+                    colors = ButtonDefaults.buttonColors(containerColor = DeepNavy.copy(alpha = 0.05f))
                 ) {
-                    Text("📢 Laporkan", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("📢 Laporkan", color = PrussianBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -248,22 +263,23 @@ fun ResultScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFF4F46E5).copy(alpha = 0.15f))
+                        .background(YaleBlue.copy(alpha = 0.05f))
+                        .border(1.dp, YaleBlue.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
                         .padding(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF4F46E5).copy(alpha = 0.2f)),
+                            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(Cerulean.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text("📖", fontSize = 18.sp)
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Pelajari lebih lanjut", color = Color(0xFF818CF8), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Text(article, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text("Pelajari lebih lanjut", color = YaleBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(article, color = PrussianBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFF818CF8))
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = YaleBlue)
                     }
                 }
             }
@@ -276,7 +292,7 @@ fun ResultScreen(
                     .fillMaxWidth()
                     .height(56.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Brush.linearGradient(listOf(Color(0xFF0D9488), Color(0xFF14B8A6))))
+                    .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
                     .clickable { onBackToHome() },
                 contentAlignment = Alignment.Center
             ) {
@@ -305,7 +321,7 @@ private fun RiskGauge(score: Int, color: Color) {
             val strokeWidth = 12.dp.toPx()
             // Background arc
             drawArc(
-                color = Color.White.copy(alpha = 0.05f),
+                color = PrussianBlue.copy(alpha = 0.05f),
                 startAngle = 140f,
                 sweepAngle = 260f,
                 useCenter = false,
@@ -323,7 +339,7 @@ private fun RiskGauge(score: Int, color: Color) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = (animatedProgress.value * 100).toInt().toString(),
-                color = Color.White,
+                color = PrussianBlue,
                 fontSize = 56.sp,
                 fontWeight = FontWeight.Black
             )
@@ -348,7 +364,8 @@ private fun ResultSection(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(CardBg)
+            .background(CardWhite)
+            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(20.dp))
             .padding(20.dp)
     ) {
         Column {
@@ -359,7 +376,7 @@ private fun ResultSection(
                 }
                 Text(
                     text = title.uppercase(),
-                    color = Slate400,
+                    color = Slate500,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp

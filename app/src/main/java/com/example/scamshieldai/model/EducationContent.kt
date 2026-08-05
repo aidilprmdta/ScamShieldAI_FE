@@ -7,5 +7,5 @@ data class EducationContent(
     val duration: String,
     val description: List<String>,
     val tips: List<String>,
-    val imageUrl: String? = null
+    val imageResId: Int? = null
 )
