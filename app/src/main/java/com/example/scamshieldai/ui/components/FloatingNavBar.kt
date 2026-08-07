@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import com.example.scamshieldai.ui.theme.Cerulean
 import com.example.scamshieldai.ui.theme.PrussianBlue
 
+import androidx.compose.ui.zIndex
+
 @Composable
 fun FloatingNavBar(
     items: List<NavigationItemData>,
@@ -37,7 +39,8 @@ fun FloatingNavBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp)
+            .zIndex(1f),
         contentAlignment = Alignment.Center
     ) {
         Surface(

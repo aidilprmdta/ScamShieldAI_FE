@@ -23,7 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.R
 import com.example.scamshieldai.ui.theme.*
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun AboutScreen(
@@ -72,16 +74,15 @@ fun AboutScreen(
                 // App Logo/Icon
                 Surface(
                     modifier = Modifier.size(100.dp),
-                    color = Color.White.copy(alpha = 0.1f),
+                    color = Color.White.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(28.dp),
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Outlined.Shield,
-                            contentDescription = null,
-                            tint = Cerulean,
-                            modifier = Modifier.size(56.dp)
+                        Image(
+                            painter = painterResource(id = R.drawable.logoapp_removebg),
+                            contentDescription = "Logo",
+                            modifier = Modifier.size(72.dp)
                         )
                     }
                 }

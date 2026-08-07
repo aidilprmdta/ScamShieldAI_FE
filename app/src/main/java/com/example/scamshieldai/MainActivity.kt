@@ -289,8 +289,9 @@ fun ScamShieldApp() {
         else -> currentRoute
     }
 
-    // Logic for showing Navbar: Hide on scanning, result, and education detail screens
+    // Logic for showing Navbar: Hide on scanning, result, and auth screens
     val hideNavBarRoutes = listOf(
+        "login", "register",
         "scan_chat", "check_link", "scan_screenshot", "scan_qr", 
         "analyzing", "result", "block_delete", "report", "quiz_screen",
         "education_detail", "security_privacy", "notifications", "about"
@@ -306,9 +307,33 @@ fun ScamShieldApp() {
             .padding(paddingValues)) {
             NavHost(
                 navController = navController,
-                startDestination = "home",
+                startDestination = "login",
                 modifier = Modifier.fillMaxSize()
             ) {
+                composable("login") {
+                    LoginScreen(
+                        onLoginSuccess = {
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        },
+                        onNavigateToRegister = {
+                            navController.navigate("register")
+                        }
+                    )
+                }
+                composable("register") {
+                    RegisterScreen(
+                        onRegisterSuccess = {
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        },
+                        onNavigateToLogin = {
+                            navController.navigate("login")
+                        }
+                    )
+                }
                 composable("home") {
                     val threatCount = remember(historyList) {
                         historyList.count { it.result.riskLevel == RiskLevel.HIGH }
@@ -325,7 +350,13 @@ fun ScamShieldApp() {
                             }
                         },
                         onEducationSelected = {
-                            navController.navigate("education_center")
+                            navController.navigate("education_center") {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         onHistoryClick = {
                             navController.navigate("history")

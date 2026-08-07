@@ -3,6 +3,7 @@ package com.example.scamshieldai.ui.screens
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -152,7 +153,12 @@ private fun HeroSection(
                             .background(Cerulean.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Outlined.Shield, contentDescription = null, tint = Cerulean, modifier = Modifier.size(24.dp))
+                        Icon(
+                            imageVector = Icons.Outlined.Shield,
+                            contentDescription = null,
+                            tint = Cerulean,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
@@ -296,10 +302,11 @@ private fun EducationBanner(onClick: () -> Unit) {
             }
             
             Image(
-                painter = painterResource(id = R.drawable.tampilan_dukasi_card_diberanda),
+                painter = painterResource(id = R.drawable.edukasi),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(90.dp)
+                    .width(110.dp)
+                    .height(90.dp)
                     .clip(RoundedCornerShape(16.dp)),
                 contentScale = ContentScale.Crop
             )

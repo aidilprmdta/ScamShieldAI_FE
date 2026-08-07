@@ -1,6 +1,5 @@
-# Task: Implementasi Halaman "Tentang ScamShield AI"
+# Task: Redesign Login & Register
 
-- [x] Membuat file `AboutScreen.kt`
-- [x] Memperbarui `ProfileScreen.kt` (Parameter & Navigasi)
-- [x] Menambahkan rute di `MainActivity.kt`
+- [x] Redesign `LoginScreen.kt`
+- [x] Redesign `RegisterScreen.kt`
 - [x] Verifikasi & Build

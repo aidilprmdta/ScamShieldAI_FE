@@ -58,6 +58,10 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.barcode)
+    
+    implementation(libs.androidx.auth.credentials)
+    implementation(libs.androidx.auth.credentials.play)
+    implementation(libs.googleid.auth)
 
     debugImplementation(libs.androidx.ui.tooling)
 
