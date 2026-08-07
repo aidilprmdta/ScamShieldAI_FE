@@ -32,6 +32,10 @@ import com.example.scamshieldai.ui.components.NavigationItemData
 import com.example.scamshieldai.ui.screens.*
 import com.example.scamshieldai.ui.theme.*
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,19 +51,52 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ScamShieldApp() {
     val navController = rememberNavController()
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    
     var lastResult by remember { mutableStateOf<ScanResult?>(null) }
-    
-    // Track completed education item IDs
     var completedEducationIds by remember { mutableStateOf(setOf<String>()) }
-    
-    // Shared history state for the session
-    val historyList = remember {
-        mutableStateListOf(
-            HistoryItem("1", ScanResult("link", 94, RiskLevel.HIGH, "http://bca-verified-promo.xyz/hadiah", emptyList(), "", ""), "1 jam lalu"),
-            HistoryItem("2", ScanResult("chat", 88, RiskLevel.HIGH, "Selamat! Anda terpilih mendapatkan ha...", emptyList(), "", ""), "1 hari lalu"),
-            HistoryItem("3", ScanResult("qr", 22, RiskLevel.LOW, "QR Code — tokopedia.com/promo/specia...", emptyList(), "", ""), "1 hari lalu"),
-            HistoryItem("4", ScanResult("screenshot", 76, RiskLevel.MEDIUM, "Screenshot: \"Mama, ini nomor baru. Tran...", emptyList(), "", ""), "3 hari lalu")
-        )
+    val historyList = remember { mutableStateListOf<HistoryItem>() }
+
+    // Helper function to save history
+    val saveHistory: (ScanResult) -> Unit = { result ->
+        auth.currentUser?.let { user ->
+            val data = hashMapOf(
+                "type" to result.type,
+                "riskScore" to result.riskScore,
+                "riskLevel" to result.riskLevel.name,
+                "inputSummary" to result.inputSummary,
+                "explanation" to result.explanation,
+                "recommendation" to result.recommendation,
+                "timestamp" to System.currentTimeMillis()
+            )
+            db.collection("users").document(user.uid).collection("history").add(data)
+        }
+    }
+
+    // Fetch history from Firestore when user is logged in
+    LaunchedEffect(auth.currentUser) {
+        auth.currentUser?.let { user ->
+            db.collection("users").document(user.uid).collection("history")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener { snapshot, _ ->
+                    snapshot?.let {
+                        historyList.clear()
+                        for (doc in it.documents) {
+                            val type = doc.getString("type") ?: ""
+                            val score = doc.getLong("riskScore")?.toInt() ?: 0
+                            val levelStr = doc.getString("riskLevel") ?: "LOW"
+                            val level = try { RiskLevel.valueOf(levelStr) } catch(e: Exception) { RiskLevel.LOW }
+                            val summary = doc.getString("inputSummary") ?: ""
+                            val explanation = doc.getString("explanation") ?: ""
+                            val recommendation = doc.getString("recommendation") ?: ""
+                            
+                            val result = ScanResult(type, score, level, summary, emptyList(), explanation, recommendation)
+                            historyList.add(HistoryItem(doc.id, result, "Tersimpan"))
+                        }
+                    }
+                }
+        }
     }
 
     val educationContents = remember {
@@ -378,7 +415,7 @@ fun ScamShieldApp() {
                                 relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
                             )
                             lastResult = result
-                            historyList.add(0, HistoryItem(System.currentTimeMillis().toString(), result, "Baru saja"))
+                            saveHistory(result)
                             navController.navigate("analyzing")
                         }
                     )
@@ -404,7 +441,7 @@ fun ScamShieldApp() {
                                 relatedArticle = if (isScam) "Waspada Phishing: Kenali Tautan Palsu" else null
                             )
                             lastResult = result
-                            historyList.add(0, HistoryItem(System.currentTimeMillis().toString(), result, "Baru saja"))
+                            saveHistory(result)
                             navController.navigate("analyzing")
                         }
                     )
@@ -412,19 +449,19 @@ fun ScamShieldApp() {
                 composable("scan_screenshot") {
                     ScanScreenshotScreen(
                         onBack = { navController.popBackStack() },
-                        onImageSelected = { uri ->
+                        onAnalyzeText = { text ->
                             val result = ScanResult(
                                 type = "screenshot",
                                 riskScore = 91,
                                 riskLevel = RiskLevel.HIGH,
-                                inputSummary = "Screenshot: \"Selamat! Anda terpilih mendapatkan hadiah Rp 25.000.000...\"",
-                                flags = listOf("Janji hadiah uang", "Domain palsu (.xyz)", "Urgensi waktu 24 jam", "Bukan kanal resmi BRI"),
-                                explanation = "Screenshot ini mengandung teks dengan indikator penipuan tinggi: janji hadiah uang dari lembaga keuangan, batas waktu klaim yang sangat pendek (24 jam), dan tautan ke domain tidak resmi (.xyz) yang meniru BRI.",
-                                recommendation = "Ini hampir pasti penipuan. Abaikan dan hapus pesan. Jangan klik tautan. Laporkan ke BRI melalui 14017 atau halo.bri.co.id.",
+                                inputSummary = "Screenshot: $text",
+                                flags = listOf("Potensi penipuan dari teks"),
+                                explanation = "Hasil OCR mendeteksi teks mencurigakan yang mengarah ke pola penipuan digital.",
+                                recommendation = "Hati-hati dengan informasi dalam gambar ini.",
                                 relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
                             )
                             lastResult = result
-                            historyList.add(0, HistoryItem(System.currentTimeMillis().toString(), result, "Baru saja"))
+                            saveHistory(result)
                             navController.navigate("analyzing")
                         },
                         onDemoSelected = {
@@ -439,7 +476,7 @@ fun ScamShieldApp() {
                                 relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
                             )
                             lastResult = result
-                            historyList.add(0, HistoryItem(System.currentTimeMillis().toString(), result, "Baru saja"))
+                            saveHistory(result)
                             navController.navigate("analyzing")
                         }
                     )
@@ -459,7 +496,7 @@ fun ScamShieldApp() {
                                 relatedArticle = "Waspada QR Phishing (Quishing)"
                             )
                             lastResult = result
-                            historyList.add(0, HistoryItem(System.currentTimeMillis().toString(), result, "Baru saja"))
+                            saveHistory(result)
                             navController.navigate("analyzing")
                         }
                     )

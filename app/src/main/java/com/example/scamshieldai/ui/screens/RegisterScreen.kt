@@ -1,5 +1,6 @@
 package com.example.scamshieldai.ui.screens
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +32,8 @@ import com.example.scamshieldai.R
 import com.example.scamshieldai.ui.theme.*
 import kotlinx.coroutines.launch
 
+import com.google.firebase.auth.FirebaseAuth
+
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
@@ -37,11 +41,13 @@ fun RegisterScreen(
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
+    var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     Box(
@@ -138,6 +144,26 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                // Username Input
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Username") },
+                    leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = null, tint = Slate400) },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = YaleBlue,
+                        unfocusedBorderColor = Slate100,
+                        focusedLabelColor = YaleBlue,
+                        unfocusedContainerColor = Slate100.copy(alpha = 0.3f),
+                        focusedContainerColor = Slate100.copy(alpha = 0.1f)
+                    ),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Email Input
                 OutlinedTextField(
                     value = email,
@@ -197,8 +223,17 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Confirm Password") },
                     leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = Slate400) },
+                    trailingIcon = {
+                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            Icon(
+                                imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = null,
+                                tint = Slate400
+                            )
+                        }
+                    },
                     shape = RoundedCornerShape(16.dp),
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = YaleBlue,
                         unfocusedBorderColor = Slate100,
@@ -233,27 +268,49 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Register Button
+                // Register Button with Dynamic Color
+                val isEnabled = username.isNotBlank() && email.isNotBlank() && 
+                               password.length >= 6 && password == confirmPassword && 
+                               phone.isNotBlank() && !isLoading
+                val auth = FirebaseAuth.getInstance()
+                
+                val buttonColor by animateColorAsState(
+                    targetValue = if (isEnabled) YaleBlue else Slate100,
+                    label = "buttonColor"
+                )
+                val contentColor by animateColorAsState(
+                    targetValue = if (isEnabled) Color.White else Slate500,
+                    label = "contentColor"
+                )
+
                 Button(
                     onClick = {
                         isLoading = true
-                        scope.launch {
-                            kotlinx.coroutines.delay(1500)
-                            isLoading = false
-                            onRegisterSuccess()
-                        }
+                        auth.createUserWithEmailAndPassword(email, password)
+                            .addOnSuccessListener {
+                                isLoading = false
+                                onRegisterSuccess()
+                            }
+                            .addOnFailureListener {
+                                isLoading = false
+                            }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = YaleBlue),
-                    enabled = email.isNotBlank() && password.length >= 6 && password == confirmPassword && !isLoading
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = buttonColor,
+                        contentColor = contentColor,
+                        disabledContainerColor = buttonColor,
+                        disabledContentColor = contentColor
+                    ),
+                    enabled = isEnabled
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("Sign Up", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Sign Up", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 }
 

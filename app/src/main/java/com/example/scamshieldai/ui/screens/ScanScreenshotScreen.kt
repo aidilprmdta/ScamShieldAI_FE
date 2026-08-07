@@ -3,10 +3,7 @@ package com.example.scamshieldai.ui.screens
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -26,24 +23,50 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.ui.theme.*
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.launch
 
 @Composable
 fun ScanScreenshotScreen(
     onBack: () -> Unit,
-    onImageSelected: (Uri) -> Unit,
+    onAnalyzeText: (String) -> Unit,
     onDemoSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    var isProcessing by remember { mutableStateOf(false) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { onImageSelected(it) }
+        uri?.let {
+            isProcessing = true
+            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+            try {
+                val image = InputImage.fromFilePath(context, it)
+                recognizer.process(image)
+                    .addOnSuccessListener { visionText ->
+                        isProcessing = false
+                        onAnalyzeText(visionText.text)
+                    }
+                    .addOnFailureListener {
+                        isProcessing = false
+                        // Fallback or error message
+                    }
+            } catch (e: Exception) {
+                isProcessing = false
+            }
+        }
     }
 
     Column(
@@ -178,9 +201,14 @@ fun ScanScreenshotScreen(
                         onClick = { launcher.launch("image/*") },
                         colors = ButtonDefaults.buttonColors(containerColor = Cerulean),
                         shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                        enabled = !isProcessing
                     ) {
-                        Text("Pilih dari Galeri", color = Color.White, fontWeight = FontWeight.Bold)
+                        if (isProcessing) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                        } else {
+                            Text("Pilih dari Galeri", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -223,5 +251,5 @@ fun ScanScreenshotScreen(
 @Preview(showBackground = true)
 @Composable
 private fun ScanScreenshotPreview() {
-    ScanScreenshotScreen(onBack = {}, onImageSelected = {}, onDemoSelected = {})
+    ScanScreenshotScreen(onBack = {}, onAnalyzeText = {}, onDemoSelected = {})
 }

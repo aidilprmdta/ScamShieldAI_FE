@@ -36,6 +36,9 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -185,6 +188,8 @@ fun LoginScreen(
 
                 // Login Button with Dynamic Color
                 val isEnabled = email.isNotBlank() && password.length >= 6 && !isLoading
+                val auth = FirebaseAuth.getInstance()
+                
                 val buttonColor by animateColorAsState(
                     targetValue = if (isEnabled) YaleBlue else Slate100,
                     label = "buttonColor"
@@ -197,11 +202,14 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         isLoading = true
-                        scope.launch {
-                            kotlinx.coroutines.delay(1500)
-                            isLoading = false
-                            onLoginSuccess()
-                        }
+                        auth.signInWithEmailAndPassword(email, password)
+                            .addOnSuccessListener {
+                                isLoading = false
+                                onLoginSuccess()
+                            }
+                            .addOnFailureListener {
+                                isLoading = false
+                            }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

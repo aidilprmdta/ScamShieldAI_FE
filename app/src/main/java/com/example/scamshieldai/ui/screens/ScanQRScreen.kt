@@ -1,6 +1,9 @@
 package com.example.scamshieldai.ui.screens
 
+import androidx.camera.core.ExperimentalGetImage
+import android.util.Size
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -26,7 +29,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.scamshieldai.ui.theme.*
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.common.InputImage
+import java.util.concurrent.Executors
 
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 fun ScanQRScreen(
     onBack: () -> Unit,
@@ -36,6 +43,7 @@ fun ScanQRScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
 
     Box(
         modifier = modifier
@@ -52,10 +60,42 @@ fun ScanQRScreen(
                     val preview = Preview.Builder().build().also {
                         it.setSurfaceProvider(previewView.surfaceProvider)
                     }
+                    
+                    val scanner = BarcodeScanning.getClient()
+                    val imageAnalysis = ImageAnalysis.Builder()
+                        .setTargetResolution(Size(1280, 720))
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+
+                    imageAnalysis.setAnalyzer(analysisExecutor) { imageProxy ->
+                        val mediaImage = imageProxy.image
+                        if (mediaImage != null) {
+                            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                            scanner.process(image)
+                                .addOnSuccessListener { barcodes ->
+                                    for (barcode in barcodes) {
+                                        barcode.rawValue?.let { data ->
+                                            onScanned(data)
+                                        }
+                                    }
+                                }
+                                .addOnCompleteListener {
+                                    imageProxy.close()
+                                }
+                        } else {
+                            imageProxy.close()
+                        }
+                    }
+
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                     try {
                         cameraProvider.unbindAll()
-                        cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+                        cameraProvider.bindToLifecycle(
+                            lifecycleOwner, 
+                            cameraSelector, 
+                            preview, 
+                            imageAnalysis
+                        )
                     } catch (e: Exception) {
                         // Handle errors
                     }
