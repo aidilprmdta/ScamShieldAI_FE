@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.scamshieldai" />
+                  <option name="mobileSdkAppId" value="1:35449512055:android:f98052e1bea454b861e672" />
+                  <option name="projectId" value="scamshieldai-9de2170b" />
+                  <option name="projectNumber" value="35449512055" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
