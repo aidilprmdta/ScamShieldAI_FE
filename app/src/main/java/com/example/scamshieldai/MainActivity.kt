@@ -540,7 +540,7 @@ fun ScamShieldApp(
                             }
                         },
                         onNavigateToLogin = {
-                            navController.navigate("login")
+                            navController.popBackStack()
                         }
                     )
                 }
