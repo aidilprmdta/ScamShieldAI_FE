@@ -35,7 +35,7 @@ class ScamShieldRepository {
                 Result.failure(Exception(response.apiErrorMessage("Gagal login")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal login")))
         }
     }
 
@@ -50,7 +50,7 @@ class ScamShieldRepository {
                 Result.failure(Exception(response.apiErrorMessage("Gagal register")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal register")))
         }
     }
 
@@ -65,7 +65,7 @@ class ScamShieldRepository {
                 Result.failure(Exception(response.apiErrorMessage("Google login gagal")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Google login gagal")))
         }
     }
 
