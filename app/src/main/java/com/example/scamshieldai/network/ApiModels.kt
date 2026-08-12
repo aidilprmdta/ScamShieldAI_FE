@@ -138,10 +138,22 @@ data class AuthResponse(
 data class AuthMeData(
     val uid: String,
     val email: String? = null,
+    @SerializedName("display_name") val displayName: String? = null,
     val admin: Boolean = false
 )
 
 data class AuthMeResponse(
+    val success: Boolean,
+    val data: AuthMeData,
+    val message: String? = null
+)
+
+data class UpdateProfileRequest(
+    @SerializedName("display_name") val displayName: String? = null,
+    val email: String? = null
+)
+
+data class UpdateProfileResponse(
     val success: Boolean,
     val data: AuthMeData,
     val message: String? = null
@@ -185,6 +197,22 @@ data class UpdateReportStatusResponse(
 
 data class RegisterFcmTokenRequest(
     @SerializedName("fcm_token") val fcmToken: String
+)
+
+data class NotificationItem(
+    val id: String,
+    val title: String,
+    val body: String,
+    val type: String,
+    val read: Boolean = false,
+    @SerializedName("created_at") val createdAt: String = "",
+    val data: Map<String, Any>? = null
+)
+
+data class NotificationListResponse(
+    val success: Boolean,
+    val data: List<NotificationItem> = emptyList(),
+    val message: String? = null
 )
 
 // ===== USER REPORTS =====

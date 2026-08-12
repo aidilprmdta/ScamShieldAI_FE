@@ -26,9 +26,6 @@
 # Compose
 -dontwarn androidx.compose.**
 
-# Biometric
--keep class androidx.biometric.** { *; }
-
 # Credentials / Google Identity
 -keep class com.google.android.libraries.identity.** { *; }
 -keep class androidx.credentials.** { *; }

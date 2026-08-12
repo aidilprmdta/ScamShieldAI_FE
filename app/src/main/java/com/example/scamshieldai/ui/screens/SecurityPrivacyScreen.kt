@@ -33,8 +33,6 @@ fun SecurityPrivacyScreen(
     val scrollState = rememberScrollState()
     
     // Simulation states
-    var is2FAEnabled by remember { mutableStateOf(false) }
-    var isAppLockEnabled by remember { mutableStateOf(true) }
     var isDataSharingEnabled by remember { mutableStateOf(false) }
 
     Column(
@@ -77,39 +75,11 @@ fun SecurityPrivacyScreen(
             
             // Account Security Section
             SecuritySection(title = "KEAMANAN AKUN") {
-                SecurityToggleItem(
-                    icon = Icons.Default.VpnKey,
-                    label = "Autentikasi Dua Faktor (2FA)",
-                    description = "Amankan akun dengan kode verifikasi tambahan",
-                    checked = is2FAEnabled,
-                    onCheckedChange = { is2FAEnabled = it },
-                    iconTint = Cerulean
-                )
                 SecurityNavItem(
                     icon = Icons.Default.Password,
                     label = "Ubah Kata Sandi",
                     description = "Terakhir diubah 3 bulan lalu",
                     iconTint = WarningYellow
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // App Privacy Section
-            SecuritySection(title = "PRIVASI APLIKASI") {
-                SecurityToggleItem(
-                    icon = Icons.Default.Fingerprint,
-                    label = "Kunci Aplikasi (Biometrik)",
-                    description = "Gunakan sidik jari untuk membuka aplikasi",
-                    checked = isAppLockEnabled,
-                    onCheckedChange = { isAppLockEnabled = it },
-                    iconTint = SafeGreen
-                )
-                SecurityNavItem(
-                    icon = Icons.Default.VisibilityOff,
-                    label = "Sembunyikan Aktivitas Scan",
-                    description = "Jangan tampilkan riwayat di beranda",
-                    iconTint = YaleBlue
                 )
             }
 

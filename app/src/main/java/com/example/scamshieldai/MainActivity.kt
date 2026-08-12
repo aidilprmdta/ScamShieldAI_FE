@@ -1,9 +1,14 @@
 package com.example.scamshieldai
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,8 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,41 +32,49 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.scamshieldai.auth.AuthTokenStore
 import com.example.scamshieldai.model.EducationContent
+import com.example.scamshieldai.network.ScamShieldRepository
+import com.example.scamshieldai.settings.AppPreferences
 import com.example.scamshieldai.ui.components.AnalyzingOverlay
 import com.example.scamshieldai.ui.components.FloatingNavBar
 import com.example.scamshieldai.ui.components.NavigationItemData
 import com.example.scamshieldai.ui.screens.*
 import com.example.scamshieldai.ui.theme.*
-
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import androidx.fragment.app.FragmentActivity
-import com.example.scamshieldai.auth.AuthTokenStore
-import com.example.scamshieldai.auth.BiometricHelper
-import com.example.scamshieldai.network.ScamShieldRepository
-import com.example.scamshieldai.settings.AppPreferences
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class MainActivity : FragmentActivity() {
+class MainActivity : ComponentActivity() {
     private val pendingNotificationRoute = mutableStateOf<String?>(null)
+
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingNotificationRoute.value = parseNotificationRoute(intent)
         enableEdgeToEdge()
+        requestNotificationsPermissionIfNeeded()
         setContent {
-            val darkMode by AppPreferences.darkModeFlow(this).collectAsState(initial = false)
             val notifRoute = pendingNotificationRoute.value
-            ScamShieldTheme(darkTheme = darkMode) {
+            ScamShieldTheme {
                 ScamShieldApp(
-                    activity = this@MainActivity,
                     pendingNotificationRoute = notifRoute,
                     onNotificationRouteConsumed = { pendingNotificationRoute.value = null }
                 )
             }
+        }
+    }
+
+    private fun requestNotificationsPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
@@ -84,7 +99,6 @@ class MainActivity : FragmentActivity() {
 
 @Composable
 fun ScamShieldApp(
-    activity: FragmentActivity? = null,
     pendingNotificationRoute: String? = null,
     onNotificationRouteConsumed: () -> Unit = {}
 ) {
@@ -100,7 +114,9 @@ fun ScamShieldApp(
     var completedEducationIds by remember { mutableStateOf(setOf<String>()) }
     val historyList = remember { mutableStateListOf<HistoryItem>() }
     var isHistoryLoading by remember { mutableStateOf(false) }
+    var historyError by remember { mutableStateOf<String?>(null) }
     var userEmail by remember { mutableStateOf("") }
+    var userDisplayName by remember { mutableStateOf("") }
     var isAdmin by remember { mutableStateOf(false) }
     val adminReports = remember { mutableStateListOf<com.example.scamshieldai.network.AdminReportItem>() }
     var isAdminLoading by remember { mutableStateOf(false) }
@@ -108,6 +124,9 @@ fun ScamShieldApp(
     var isMyReportsLoading by remember { mutableStateOf(false) }
     var reportDetail by remember { mutableStateOf<com.example.scamshieldai.network.UserReportItem?>(null) }
     var isReportDetailLoading by remember { mutableStateOf(false) }
+    val notificationList = remember { mutableStateListOf<com.example.scamshieldai.network.NotificationItem>() }
+    var isNotificationsLoading by remember { mutableStateOf(false) }
+    var notificationsError by remember { mutableStateOf<String?>(null) }
     var pendingMyReportsCount by remember { mutableIntStateOf(0) }
     var pendingAdminReportsCount by remember { mutableIntStateOf(0) }
 
@@ -116,21 +135,9 @@ fun ScamShieldApp(
     }
 
     LaunchedEffect(Unit) {
-        val biometricEnabled = AppPreferences.biometricEnabledFlow(context).first()
         val savedToken = AppPreferences.savedTokenFlow(context).first()
         val savedRefresh = AppPreferences.savedRefreshTokenFlow(context).first()
-        if (biometricEnabled && savedToken != null && activity != null && BiometricHelper.canAuthenticate(activity)) {
-            BiometricHelper.authenticate(
-                activity = activity,
-                onSuccess = {
-                    AuthTokenStore.setToken(savedToken, savedRefresh)
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onError = { /* fall through to login screen */ }
-            )
-        } else if (savedToken != null && !biometricEnabled) {
+        if (savedToken != null) {
             AuthTokenStore.setToken(savedToken, savedRefresh)
             navController.navigate("home") {
                 popUpTo("login") { inclusive = true }
@@ -160,6 +167,7 @@ fun ScamShieldApp(
     val fetchHistory: () -> Unit = {
         coroutineScope.launch {
             isHistoryLoading = true
+            historyError = null
             repository.getHistory().onSuccess { response ->
                 historyList.clear()
                 for (item in response.data) {
@@ -167,7 +175,7 @@ fun ScamShieldApp(
                     historyList.add(HistoryItem(item.scanId ?: "", scanResult, "Tersimpan"))
                 }
             }.onFailure {
-                historyList.clear()
+                historyError = it.message ?: "Gagal memuat riwayat"
                 showError("Gagal memuat riwayat: ${it.message}")
             }
             isHistoryLoading = false
@@ -201,11 +209,34 @@ fun ScamShieldApp(
         }
     }
 
+    val fetchNotifications: () -> Unit = {
+        coroutineScope.launch {
+            if (AuthTokenStore.idToken == null) {
+                notificationList.clear()
+                notificationsError = "Login untuk melihat notifikasi"
+                return@launch
+            }
+            isNotificationsLoading = true
+            notificationsError = null
+            repository.getNotifications()
+                .onSuccess {
+                    notificationList.clear()
+                    notificationList.addAll(it)
+                }
+                .onFailure {
+                    notificationsError = it.message ?: "Gagal memuat notifikasi"
+                }
+            isNotificationsLoading = false
+        }
+    }
+
     LaunchedEffect(token) {
         fetchHistory()
         if (token != null) {
             repository.getMe().onSuccess { me ->
                 userEmail = me.email ?: ""
+                userDisplayName = me.displayName?.takeIf { it.isNotBlank() }
+                    ?: me.email?.substringBefore("@").orEmpty()
                 isAdmin = me.admin
                 coroutineScope.launch {
                     repository.getMyPendingReportCount().onSuccess { pendingMyReportsCount = it }
@@ -220,11 +251,14 @@ fun ScamShieldApp(
                 .addOnSuccessListener { fcmToken: String ->
                     coroutineScope.launch { repository.registerFcmToken(fcmToken) }
                 }
+            fetchNotifications()
         } else {
             userEmail = ""
+            userDisplayName = ""
             isAdmin = false
             pendingMyReportsCount = 0
             pendingAdminReportsCount = 0
+            notificationList.clear()
         }
     }
 
@@ -495,7 +529,7 @@ fun ScamShieldApp(
         "scan_chat", "check_link", "scan_screenshot", "scan_qr", 
         "analyzing", "result", "block_delete", "report", "quiz_screen",
         "education_detail", "security_privacy", "notifications", "about",
-        "admin_reports", "my_reports", "report_status"
+        "admin_reports", "my_reports", "report_status", "edit_profile", "help_center"
     )
     val showNavBar = !hideNavBarRoutes.any { currentRoute.startsWith(it) }
 
@@ -582,6 +616,9 @@ fun ScamShieldApp(
                                 repository.analyzeChat(text).onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
                                     fetchHistory()
+                                    if (token == null) {
+                                        showError("Login agar hasil scan tersimpan di Riwayat")
+                                    }
                                 }.onFailure {
                                     showError("Gagal menganalisis: ${it.message}")
                                     navController.popBackStack()
@@ -599,6 +636,9 @@ fun ScamShieldApp(
                                 repository.analyzeLink(url).onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
                                     fetchHistory()
+                                    if (token == null) {
+                                        showError("Login agar hasil scan tersimpan di Riwayat")
+                                    }
                                 }.onFailure {
                                     showError("Gagal menganalisis link: ${it.message}")
                                     navController.popBackStack()
@@ -691,9 +731,12 @@ fun ScamShieldApp(
                     )
                 }
                 composable("history") {
+                    LaunchedEffect(Unit) { fetchHistory() }
                     HistoryScreen(
                         historyList = historyList,
                         isLoading = isHistoryLoading,
+                        errorMessage = historyError,
+                        isLoggedIn = token != null,
                         onBack = { navController.popBackStack() },
                         onItemClick = { item ->
                             lastResult = item.result
@@ -711,24 +754,19 @@ fun ScamShieldApp(
                 }
                 composable("profile") {
                     val context = LocalContext.current
-                    val isDarkMode by AppPreferences.darkModeFlow(context).collectAsState(initial = false)
-                    val isBiometricEnabled by AppPreferences.biometricEnabledFlow(context).collectAsState(initial = false)
                     LaunchedEffect(Unit) { fetchReportBadgeCounts() }
                     ProfileScreen(
-                        userName = userEmail.substringBefore("@").ifEmpty { "Pengguna ScamShield" },
+                        userName = userDisplayName.ifEmpty {
+                            userEmail.substringBefore("@").ifEmpty { "Pengguna ScamShield" }
+                        },
                         userEmail = userEmail,
                         scanCount = historyList.size,
                         threatCount = historyList.count { it.result.riskLevel == RiskLevel.HIGH },
-                        isDarkMode = isDarkMode,
-                        isBiometricEnabled = isBiometricEnabled,
                         isAdmin = isAdmin,
                         pendingMyReportsCount = pendingMyReportsCount,
                         pendingAdminReportsCount = pendingAdminReportsCount,
-                        onDarkModeToggle = { enabled ->
-                            coroutineScope.launch { AppPreferences.setDarkMode(context, enabled) }
-                        },
-                        onBiometricToggle = { enabled ->
-                            coroutineScope.launch { AppPreferences.setBiometricEnabled(context, enabled) }
+                        onEditProfileClick = {
+                            navController.navigate("edit_profile")
                         },
                         onAdminReportsClick = {
                             coroutineScope.launch {
@@ -754,12 +792,39 @@ fun ScamShieldApp(
                         onAboutClick = {
                             navController.navigate("about")
                         },
+                        onHelpClick = {
+                            navController.navigate("help_center")
+                        },
                         onLogout = {
                             AuthTokenStore.clear()
                             historyList.clear()
                             coroutineScope.launch { AppPreferences.setSavedToken(context, null) }
                             navController.navigate("login") {
                                 popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+                composable("edit_profile") {
+                    EditProfileScreen(
+                        initialName = userDisplayName.ifEmpty {
+                            userEmail.substringBefore("@")
+                        },
+                        initialEmail = userEmail,
+                        onBack = { navController.popBackStack() },
+                        onSave = { name, email, onDone ->
+                            coroutineScope.launch {
+                                repository.updateProfile(name, email)
+                                    .onSuccess { me ->
+                                        userEmail = me.email ?: email
+                                        userDisplayName = me.displayName?.takeIf { it.isNotBlank() }
+                                            ?: me.email?.substringBefore("@")
+                                            ?: name
+                                        isAdmin = me.admin
+                                        showError("Profil berhasil diperbarui")
+                                        onDone(Result.success(Unit))
+                                    }
+                                    .onFailure { onDone(Result.failure(it)) }
                             }
                         }
                     )
@@ -849,12 +914,38 @@ fun ScamShieldApp(
                     )
                 }
                 composable("notifications") {
+                    LaunchedEffect(Unit) { fetchNotifications() }
                     NotificationScreen(
-                        onBack = { navController.popBackStack() }
+                        notifications = notificationList,
+                        isLoading = isNotificationsLoading,
+                        errorMessage = notificationsError,
+                        onBack = { navController.popBackStack() },
+                        onRefresh = { fetchNotifications() },
+                        onNotificationClick = { item ->
+                            coroutineScope.launch {
+                                repository.markNotificationRead(item.id)
+                                fetchNotifications()
+                            }
+                            val reportId = item.data?.get("report_id")?.toString()
+                            if (!reportId.isNullOrBlank() &&
+                                (item.type == "report_status_updated" || item.type == "new_report")
+                            ) {
+                                if (item.type == "new_report" && isAdmin) {
+                                    navController.navigate("admin_reports")
+                                } else {
+                                    navController.navigate("report_status/$reportId")
+                                }
+                            }
+                        }
                     )
                 }
                 composable("about") {
                     AboutScreen(
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable("help_center") {
+                    HelpCenterScreen(
                         onBack = { navController.popBackStack() }
                     )
                 }

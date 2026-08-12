@@ -35,16 +35,14 @@ fun ProfileScreen(
     userEmail: String = "",
     scanCount: Int = 0,
     threatCount: Int = 0,
-    isDarkMode: Boolean = false,
-    isBiometricEnabled: Boolean = false,
     isAdmin: Boolean = false,
     pendingMyReportsCount: Int = 0,
     pendingAdminReportsCount: Int = 0,
-    onDarkModeToggle: (Boolean) -> Unit = {},
-    onBiometricToggle: (Boolean) -> Unit = {},
     onSecurityClick: () -> Unit,
     onNotificationClick: () -> Unit,
     onAboutClick: () -> Unit,
+    onHelpClick: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
     onMyReportsClick: () -> Unit = {},
     onAdminReportsClick: () -> Unit = {},
     onLogout: () -> Unit = {},
@@ -83,29 +81,46 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 // Enhanced Avatar
-                Box(contentAlignment = Alignment.Center) {
-                    Box(
+                Box(contentAlignment = Alignment.BottomEnd) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.1f))
+                                .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(90.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                                .padding(2.dp)
+                                .clip(CircleShape)
+                                .background(Cerulean.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Cerulean,
+                                modifier = Modifier.size(56.dp)
+                            )
+                        }
+                    }
+                    IconButton(
+                        onClick = onEditProfileClick,
                         modifier = Modifier
-                            .size(110.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                            .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(90.dp)
+                            .offset(x = (-4).dp, y = (-4).dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                             .background(Color.White)
-                            .padding(2.dp)
-                            .clip(CircleShape)
-                            .background(Cerulean.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            tint = Cerulean,
-                            modifier = Modifier.size(56.dp)
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit profil",
+                            tint = YaleBlue,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -179,6 +194,12 @@ fun ProfileScreen(
             // Settings Group
             ProfileSection(title = "PENGATURAN AKUN") {
                 ProfileItem(
+                    icon = Icons.Default.Edit,
+                    label = "Edit Profil",
+                    iconTint = YaleBlue,
+                    onClick = onEditProfileClick
+                )
+                ProfileItem(
                     icon = Icons.Default.Campaign,
                     label = "Laporan Saya",
                     iconTint = Cerulean,
@@ -201,25 +222,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            ProfileSection(title = "PREFERENSI") {
-                ProfileToggleItem(
-                    icon = Icons.Default.DarkMode,
-                    label = "Mode Gelap",
-                    iconTint = DeepNavy,
-                    checked = isDarkMode,
-                    onCheckedChange = onDarkModeToggle
-                )
-                ProfileToggleItem(
-                    icon = Icons.Default.Fingerprint,
-                    label = "Login Biometrik",
-                    iconTint = SafeGreen,
-                    checked = isBiometricEnabled,
-                    onCheckedChange = onBiometricToggle
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
             ProfileSection(title = "DUKUNGAN") {
                 ProfileItem(
                     icon = Icons.Default.Info,
@@ -230,7 +232,8 @@ fun ProfileScreen(
                 ProfileItem(
                     icon = Icons.AutoMirrored.Filled.Help,
                     label = "Pusat Bantuan",
-                    iconTint = Color(0xFFA855F7)
+                    iconTint = Color(0xFFA855F7),
+                    onClick = onHelpClick
                 )
                 ProfileItem(
                     icon = Icons.Default.Star,
@@ -373,35 +376,6 @@ private fun ProfileItem(
         } else {
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Slate500, modifier = Modifier.size(20.dp))
         }
-    }
-}
-
-@Composable
-private fun ProfileToggleItem(
-    icon: ImageVector,
-    label: String,
-    iconTint: Color,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(iconTint.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = label, color = PrussianBlue, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 

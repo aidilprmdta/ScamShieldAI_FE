@@ -13,24 +13,12 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "scamshield_prefs")
 
 object AppPreferences {
-    private val DARK_MODE = booleanPreferencesKey("dark_mode")
-    private val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
     private val SAVED_TOKEN = stringPreferencesKey("saved_token")
     private val SAVED_REFRESH_TOKEN = stringPreferencesKey("saved_refresh_token")
-
-    fun darkModeFlow(context: Context): Flow<Boolean> =
-        context.dataStore.data.map { it[DARK_MODE] ?: false }
-
-    suspend fun setDarkMode(context: Context, enabled: Boolean) {
-        context.dataStore.edit { it[DARK_MODE] = enabled }
-    }
-
-    fun biometricEnabledFlow(context: Context): Flow<Boolean> =
-        context.dataStore.data.map { it[BIOMETRIC_ENABLED] ?: false }
-
-    suspend fun setBiometricEnabled(context: Context, enabled: Boolean) {
-        context.dataStore.edit { it[BIOMETRIC_ENABLED] = enabled }
-    }
+    private val NOTIF_ALL = booleanPreferencesKey("notif_all")
+    private val NOTIF_SECURITY = booleanPreferencesKey("notif_security")
+    private val NOTIF_EDUCATION = booleanPreferencesKey("notif_education")
+    private val NOTIF_SYSTEM = booleanPreferencesKey("notif_system")
 
     fun savedTokenFlow(context: Context): Flow<String?> =
         context.dataStore.data.map { it[SAVED_TOKEN] }
@@ -48,5 +36,33 @@ object AppPreferences {
                 if (refreshToken != null) it[SAVED_REFRESH_TOKEN] = refreshToken
             }
         }
+    }
+
+    fun notifAllFlow(context: Context): Flow<Boolean> =
+        context.dataStore.data.map { it[NOTIF_ALL] ?: true }
+
+    fun notifSecurityFlow(context: Context): Flow<Boolean> =
+        context.dataStore.data.map { it[NOTIF_SECURITY] ?: true }
+
+    fun notifEducationFlow(context: Context): Flow<Boolean> =
+        context.dataStore.data.map { it[NOTIF_EDUCATION] ?: true }
+
+    fun notifSystemFlow(context: Context): Flow<Boolean> =
+        context.dataStore.data.map { it[NOTIF_SYSTEM] ?: false }
+
+    suspend fun setNotifAll(context: Context, enabled: Boolean) {
+        context.dataStore.edit { it[NOTIF_ALL] = enabled }
+    }
+
+    suspend fun setNotifSecurity(context: Context, enabled: Boolean) {
+        context.dataStore.edit { it[NOTIF_SECURITY] = enabled }
+    }
+
+    suspend fun setNotifEducation(context: Context, enabled: Boolean) {
+        context.dataStore.edit { it[NOTIF_EDUCATION] = enabled }
+    }
+
+    suspend fun setNotifSystem(context: Context, enabled: Boolean) {
+        context.dataStore.edit { it[NOTIF_SYSTEM] = enabled }
     }
 }

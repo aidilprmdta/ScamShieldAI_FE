@@ -17,10 +17,27 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat profil"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat profil")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat profil")))
+        }
+    }
+
+    suspend fun updateProfile(displayName: String?, email: String?): Result<AuthMeData> {
+        return try {
+            val token = getAuthToken() ?: return Result.failure(Exception("Belum login"))
+            val response = api.updateProfile(
+                UpdateProfileRequest(displayName = displayName, email = email),
+                token
+            )
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()!!.data)
+            } else {
+                Result.failure(Exception(response.apiErrorMessage("Gagal memperbarui profil")))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage("Gagal memperbarui profil")))
         }
     }
 
@@ -118,10 +135,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat riwayat"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat riwayat")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat riwayat")))
         }
     }
 
@@ -132,10 +149,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal menghapus riwayat"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal menghapus riwayat")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal menghapus riwayat")))
         }
     }
 
@@ -268,9 +285,34 @@ class ScamShieldRepository {
         return try {
             val response = api.registerFcmToken(RegisterFcmTokenRequest(fcmToken), "Bearer $token")
             if (response.isSuccessful) Result.success(Unit)
-            else Result.failure(Exception("Gagal mendaftarkan token notifikasi"))
+            else Result.failure(Exception(response.apiErrorMessage("Gagal mendaftarkan token notifikasi")))
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal mendaftarkan token notifikasi")))
+        }
+    }
+
+    suspend fun getNotifications(): Result<List<NotificationItem>> {
+        return try {
+            val token = getAuthToken() ?: return Result.failure(Exception("Belum login"))
+            val response = api.getNotifications(token)
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()!!.data)
+            } else {
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat notifikasi")))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage("Gagal memuat notifikasi")))
+        }
+    }
+
+    suspend fun markNotificationRead(notifId: String): Result<Unit> {
+        return try {
+            val token = getAuthToken() ?: return Result.failure(Exception("Belum login"))
+            val response = api.markNotificationRead(notifId, token)
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception(response.apiErrorMessage("Gagal memperbarui notifikasi")))
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage("Gagal memperbarui notifikasi")))
         }
     }
 }

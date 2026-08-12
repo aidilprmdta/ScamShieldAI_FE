@@ -30,6 +30,12 @@ interface ScamShieldApi {
         @Header("Authorization") token: String
     ): Response<AuthMeResponse>
 
+    @PATCH("api/v1/auth/me")
+    suspend fun updateProfile(
+        @Body request: UpdateProfileRequest,
+        @Header("Authorization") token: String
+    ): Response<UpdateProfileResponse>
+
     @POST("api/v1/analyze/chat")
     suspend fun analyzeChat(
         @Body request: AnalyzeChatRequest,
@@ -117,6 +123,17 @@ interface ScamShieldApi {
     @POST("api/v1/notifications/register-token")
     suspend fun registerFcmToken(
         @Body request: RegisterFcmTokenRequest,
+        @Header("Authorization") token: String
+    ): Response<ApiResponse<Any>>
+
+    @GET("api/v1/notifications")
+    suspend fun getNotifications(
+        @Header("Authorization") token: String
+    ): Response<NotificationListResponse>
+
+    @PATCH("api/v1/notifications/{notif_id}/read")
+    suspend fun markNotificationRead(
+        @Path("notif_id") notifId: String,
         @Header("Authorization") token: String
     ): Response<ApiResponse<Any>>
 }

@@ -43,6 +43,8 @@ data class HistoryItem(
 fun HistoryScreen(
     historyList: List<HistoryItem>,
     isLoading: Boolean = false,
+    errorMessage: String? = null,
+    isLoggedIn: Boolean = true,
     onBack: () -> Unit,
     onItemClick: (HistoryItem) -> Unit,
     onDeleteItem: (HistoryItem) -> Unit = {},
@@ -188,13 +190,21 @@ fun HistoryScreen(
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "Belum ada riwayat",
+                                        text = when {
+                                            errorMessage != null -> "Gagal memuat riwayat"
+                                            !isLoggedIn -> "Login untuk melihat riwayat"
+                                            else -> "Belum ada riwayat"
+                                        },
                                         color = Slate500,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = "Hasil deteksi akan muncul di sini",
+                                        text = when {
+                                            errorMessage != null -> errorMessage
+                                            !isLoggedIn -> "Hasil scan tersimpan setelah Anda login"
+                                            else -> "Hasil deteksi akan muncul di sini setelah scan saat login"
+                                        },
                                         color = Slate400,
                                         fontSize = 13.sp
                                     )
