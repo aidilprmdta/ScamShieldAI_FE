@@ -163,10 +163,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data!!)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal mengirim laporan"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal mengirim laporan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal mengirim laporan")))
         }
     }
 
@@ -177,10 +177,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat laporan"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat laporan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat laporan")))
         }
     }
 
@@ -191,10 +191,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat detail laporan"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat detail laporan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat detail laporan")))
         }
     }
 
@@ -205,10 +205,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.count)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat jumlah laporan"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat jumlah laporan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat jumlah laporan")))
         }
     }
 
@@ -219,10 +219,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.count)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat jumlah laporan"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat jumlah laporan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat jumlah laporan")))
         }
     }
 
@@ -259,10 +259,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal memuat laporan"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal memuat laporan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal memuat laporan")))
         }
     }
 
@@ -273,10 +273,10 @@ class ScamShieldRepository {
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal mengubah status"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal mengubah status")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal mengubah status")))
         }
     }
 
