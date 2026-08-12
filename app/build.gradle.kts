@@ -1,4 +1,5 @@
 import java.io.File
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -19,6 +20,22 @@ fun readGoogleWebClientId(googleServicesFile: File): String {
     return ""
 }
 
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        load(file.inputStream())
+    }
+}
+
+fun normalizeBaseUrl(raw: String): String {
+    val trimmed = raw.trim().trim('"')
+    return if (trimmed.endsWith("/")) trimmed else "$trimmed/"
+}
+
+val devBaseUrl = normalizeBaseUrl(
+    localProperties.getProperty("DEV_BASE_URL", "http://10.0.2.2:8000/")
+)
+
 android {
     namespace = "com.example.scamshieldai"
     compileSdk = 36
@@ -32,7 +49,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/\"")
+        buildConfigField("String", "BASE_URL", "\"$devBaseUrl\"")
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
@@ -42,7 +59,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/\"")
+            buildConfigField("String", "BASE_URL", "\"$devBaseUrl\"")
         }
         release {
             buildConfigField("String", "BASE_URL", "\"https://api.scamshieldai.com/\"")
