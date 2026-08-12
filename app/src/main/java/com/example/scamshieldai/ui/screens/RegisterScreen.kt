@@ -28,11 +28,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
 import com.example.scamshieldai.R
 import com.example.scamshieldai.ui.theme.*
+import com.example.scamshieldai.network.ScamShieldRepository
+import com.example.scamshieldai.auth.GoogleAuthHelper
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun RegisterScreen(
@@ -40,7 +47,9 @@ fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repository = remember { ScamShieldRepository() }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -49,6 +58,15 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            errorMessage = null
+        }
+    }
 
     Box(
         modifier = modifier
@@ -272,7 +290,6 @@ fun RegisterScreen(
                 val isEnabled = username.isNotBlank() && email.isNotBlank() && 
                                password.length >= 6 && password == confirmPassword && 
                                phone.isNotBlank() && !isLoading
-                val auth = FirebaseAuth.getInstance()
                 
                 val buttonColor by animateColorAsState(
                     targetValue = if (isEnabled) YaleBlue else Slate100,
@@ -286,14 +303,17 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         isLoading = true
-                        auth.createUserWithEmailAndPassword(email, password)
-                            .addOnSuccessListener {
-                                isLoading = false
-                                onRegisterSuccess()
-                            }
-                            .addOnFailureListener {
-                                isLoading = false
-                            }
+                        scope.launch {
+                            repository.register(email.trim(), password)
+                                .onSuccess {
+                                    isLoading = false
+                                    onRegisterSuccess()
+                                }
+                                .onFailure {
+                                    isLoading = false
+                                    errorMessage = it.message ?: "Registrasi gagal"
+                                }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -314,8 +334,96 @@ fun RegisterScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // OR Separator
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = Slate100)
+                    Text(
+                        "Or sign up with",
+                        color = Slate400,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = Slate100)
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Google Sign Up Button
+                OutlinedButton(
+                    onClick = {
+                        handleGoogleRegister(context, scope, repository, onRegisterSuccess) { errorMessage = it }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Slate100),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PrussianBlue)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_google_logo),
+                            contentDescription = "Google Logo",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Continue with Google",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrussianBlue
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(40.dp))
             }
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}
+
+private fun handleGoogleRegister(
+    context: Context,
+    scope: CoroutineScope,
+    repository: ScamShieldRepository,
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit = {}
+) {
+    val credentialManager = CredentialManager.create(context)
+
+    scope.launch {
+        try {
+            val serverClientId = GoogleAuthHelper.getServerClientId(context)
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(serverClientId)
+                .build()
+
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
+            val result = credentialManager.getCredential(context = context, request = request)
+            val googleCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
+            repository.googleLogin(googleCredential.idToken)
+                .onSuccess { onSuccess() }
+                .onFailure { onError(it.message ?: "Google login gagal") }
+        } catch (e: Exception) {
+            onError(e.message ?: "Google login gagal")
         }
     }
 }
