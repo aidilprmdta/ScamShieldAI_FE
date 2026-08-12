@@ -54,11 +54,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-<<<<<<< HEAD
-        buildConfigField("String", "BASE_URL", "\"http://10.95.17.218:8000/\"")
-=======
         buildConfigField("String", "BASE_URL", "\"$devBaseUrl\"")
->>>>>>> 278ad9e516c2d5aec63d368e0b27594f1e9351b7
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
@@ -68,11 +64,7 @@ android {
 
     buildTypes {
         debug {
-<<<<<<< HEAD
-            buildConfigField("String", "BASE_URL", "\"http://10.95.17.218:8000/\"")
-=======
             buildConfigField("String", "BASE_URL", "\"$devBaseUrl\"")
->>>>>>> 278ad9e516c2d5aec63d368e0b27594f1e9351b7
         }
         release {
             buildConfigField("String", "BASE_URL", "\"https://api.scamshieldai.com/\"")
