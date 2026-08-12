@@ -1,10 +1,10 @@
+import java.io.File
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.services)
 }
-
-import java.io.File
 
 fun readGoogleWebClientId(googleServicesFile: File): String {
     if (!googleServicesFile.exists()) return ""
@@ -21,11 +21,7 @@ fun readGoogleWebClientId(googleServicesFile: File): String {
 
 android {
     namespace = "com.example.scamshieldai"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.scamshieldai"

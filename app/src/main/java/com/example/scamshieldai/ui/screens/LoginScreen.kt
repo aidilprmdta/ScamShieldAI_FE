@@ -1,6 +1,7 @@
 package com.example.scamshieldai.ui.screens
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -48,6 +49,7 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    Log.d("LoginScreen", "LoginScreen Composing")
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }

@@ -39,6 +39,7 @@ import com.example.scamshieldai.auth.AuthTokenStore
 import com.example.scamshieldai.auth.BiometricHelper
 import com.example.scamshieldai.network.ScamShieldRepository
 import com.example.scamshieldai.settings.AppPreferences
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -215,8 +216,8 @@ fun ScamShieldApp(
                     }
                 }
             }
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
-                .addOnSuccessListener { fcmToken ->
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { fcmToken: String ->
                     coroutineScope.launch { repository.registerFcmToken(fcmToken) }
                 }
         } else {
