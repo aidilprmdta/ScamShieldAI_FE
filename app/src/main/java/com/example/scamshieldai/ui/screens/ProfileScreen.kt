@@ -31,9 +31,23 @@ import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun ProfileScreen(
+    userName: String = "Pengguna ScamShield",
+    userEmail: String = "",
+    scanCount: Int = 0,
+    threatCount: Int = 0,
+    isDarkMode: Boolean = false,
+    isBiometricEnabled: Boolean = false,
+    isAdmin: Boolean = false,
+    pendingMyReportsCount: Int = 0,
+    pendingAdminReportsCount: Int = 0,
+    onDarkModeToggle: (Boolean) -> Unit = {},
+    onBiometricToggle: (Boolean) -> Unit = {},
     onSecurityClick: () -> Unit,
     onNotificationClick: () -> Unit,
     onAboutClick: () -> Unit,
+    onMyReportsClick: () -> Unit = {},
+    onAdminReportsClick: () -> Unit = {},
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -100,7 +114,7 @@ fun ProfileScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Pengguna ScamShield",
+                        text = userName,
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.ExtraBold
@@ -114,7 +128,7 @@ fun ProfileScreen(
                     )
                 }
                 Text(
-                    text = "premium_user@email.com",
+                    text = userEmail,
                     color = Color.White.copy(alpha = 0.6f),
                     fontSize = 14.sp
                 )
@@ -135,22 +149,42 @@ fun ProfileScreen(
             ) {
                 StatItem(
                     icon = Icons.Outlined.Shield,
-                    value = "342",
-                    label = "Blokir",
+                    value = threatCount.toString(),
+                    label = "Ancaman",
                     modifier = Modifier.weight(1f)
                 )
                 StatItem(
                     icon = Icons.Outlined.History,
-                    value = "128",
-                    label = "Hari",
+                    value = scanCount.toString(),
+                    label = "Scan",
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            if (isAdmin) {
+                ProfileSection(title = "ADMIN") {
+                    ProfileItem(
+                        icon = Icons.Default.AdminPanelSettings,
+                        label = "Kelola Laporan",
+                        iconTint = DangerRed,
+                        badgeCount = pendingAdminReportsCount,
+                        onClick = onAdminReportsClick
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
             // Settings Group
             ProfileSection(title = "PENGATURAN AKUN") {
+                ProfileItem(
+                    icon = Icons.Default.Campaign,
+                    label = "Laporan Saya",
+                    iconTint = Cerulean,
+                    badgeCount = pendingMyReportsCount,
+                    onClick = onMyReportsClick
+                )
                 ProfileItem(
                     icon = Icons.Default.Lock,
                     label = "Keamanan & Privasi",
@@ -162,6 +196,25 @@ fun ProfileScreen(
                     label = "Notifikasi",
                     iconTint = WarningYellow,
                     onClick = onNotificationClick
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ProfileSection(title = "PREFERENSI") {
+                ProfileToggleItem(
+                    icon = Icons.Default.DarkMode,
+                    label = "Mode Gelap",
+                    iconTint = DeepNavy,
+                    checked = isDarkMode,
+                    onCheckedChange = onDarkModeToggle
+                )
+                ProfileToggleItem(
+                    icon = Icons.Default.Fingerprint,
+                    label = "Login Biometrik",
+                    iconTint = SafeGreen,
+                    checked = isBiometricEnabled,
+                    onCheckedChange = onBiometricToggle
                 )
             }
 
@@ -192,7 +245,7 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .clickable { },
+                    .clickable { onLogout() },
                 color = DangerRed.copy(alpha = 0.08f),
                 shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.2f))
@@ -277,6 +330,7 @@ private fun ProfileItem(
     label: String,
     iconTint: Color,
     value: String? = null,
+    badgeCount: Int = 0,
     onClick: () -> Unit = {}
 ) {
     Row(
@@ -301,9 +355,53 @@ private fun ProfileItem(
         
         if (value != null) {
             Text(text = value, color = Cerulean, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        } else if (badgeCount > 0) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(DangerRed),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (badgeCount > 99) "99+" else badgeCount.toString(),
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         } else {
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Slate500, modifier = Modifier.size(20.dp))
         }
+    }
+}
+
+@Composable
+private fun ProfileToggleItem(
+    icon: ImageVector,
+    label: String,
+    iconTint: Color,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(iconTint.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(text = label, color = PrussianBlue, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
