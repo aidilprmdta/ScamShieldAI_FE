@@ -1,7 +1,7 @@
 package com.example.scamshieldai
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -32,71 +32,229 @@ import com.example.scamshieldai.ui.components.NavigationItemData
 import com.example.scamshieldai.ui.screens.*
 import com.example.scamshieldai.ui.theme.*
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import androidx.fragment.app.FragmentActivity
+import com.example.scamshieldai.auth.AuthTokenStore
+import com.example.scamshieldai.auth.BiometricHelper
+import com.example.scamshieldai.network.ScamShieldRepository
+import com.example.scamshieldai.settings.AppPreferences
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
+    private val pendingNotificationRoute = mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pendingNotificationRoute.value = parseNotificationRoute(intent)
         enableEdgeToEdge()
         setContent {
-            ScamShieldTheme {
-                ScamShieldApp()
+            val darkMode by AppPreferences.darkModeFlow(this).collectAsState(initial = false)
+            val notifRoute = pendingNotificationRoute.value
+            ScamShieldTheme(darkTheme = darkMode) {
+                ScamShieldApp(
+                    activity = this@MainActivity,
+                    pendingNotificationRoute = notifRoute,
+                    onNotificationRouteConsumed = { pendingNotificationRoute.value = null }
+                )
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingNotificationRoute.value = parseNotificationRoute(intent)
+    }
+
+    private fun parseNotificationRoute(intent: Intent?): String? {
+        val type = intent?.getStringExtra("type") ?: return null
+        return when (type) {
+            "report_status_updated" -> {
+                val reportId = intent.getStringExtra("report_id") ?: return null
+                "report_status/$reportId"
+            }
+            "new_report" -> "admin_reports"
+            else -> null
         }
     }
 }
 
 @Composable
-fun ScamShieldApp() {
+fun ScamShieldApp(
+    activity: FragmentActivity? = null,
+    pendingNotificationRoute: String? = null,
+    onNotificationRouteConsumed: () -> Unit = {}
+) {
     val navController = rememberNavController()
-    val auth = FirebaseAuth.getInstance()
-    val db = FirebaseFirestore.getInstance()
+    val repository = remember { ScamShieldRepository() }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val token = AuthTokenStore.idToken
     
+    val snackbarHostState = remember { SnackbarHostState() }
     var lastResult by remember { mutableStateOf<ScanResult?>(null) }
+    var isAnalyzing by remember { mutableStateOf(false) }
     var completedEducationIds by remember { mutableStateOf(setOf<String>()) }
     val historyList = remember { mutableStateListOf<HistoryItem>() }
+    var isHistoryLoading by remember { mutableStateOf(false) }
+    var userEmail by remember { mutableStateOf("") }
+    var isAdmin by remember { mutableStateOf(false) }
+    val adminReports = remember { mutableStateListOf<com.example.scamshieldai.network.AdminReportItem>() }
+    var isAdminLoading by remember { mutableStateOf(false) }
+    val myReports = remember { mutableStateListOf<com.example.scamshieldai.network.UserReportItem>() }
+    var isMyReportsLoading by remember { mutableStateOf(false) }
+    var reportDetail by remember { mutableStateOf<com.example.scamshieldai.network.UserReportItem?>(null) }
+    var isReportDetailLoading by remember { mutableStateOf(false) }
+    var pendingMyReportsCount by remember { mutableIntStateOf(0) }
+    var pendingAdminReportsCount by remember { mutableIntStateOf(0) }
 
-    // Helper function to save history
-    val saveHistory: (ScanResult) -> Unit = { result ->
-        auth.currentUser?.let { user ->
-            val data = hashMapOf(
-                "type" to result.type,
-                "riskScore" to result.riskScore,
-                "riskLevel" to result.riskLevel.name,
-                "inputSummary" to result.inputSummary,
-                "explanation" to result.explanation,
-                "recommendation" to result.recommendation,
-                "timestamp" to System.currentTimeMillis()
+    fun showError(message: String) {
+        coroutineScope.launch { snackbarHostState.showSnackbar(message) }
+    }
+
+    LaunchedEffect(Unit) {
+        val biometricEnabled = AppPreferences.biometricEnabledFlow(context).first()
+        val savedToken = AppPreferences.savedTokenFlow(context).first()
+        val savedRefresh = AppPreferences.savedRefreshTokenFlow(context).first()
+        if (biometricEnabled && savedToken != null && activity != null && BiometricHelper.canAuthenticate(activity)) {
+            BiometricHelper.authenticate(
+                activity = activity,
+                onSuccess = {
+                    AuthTokenStore.setToken(savedToken, savedRefresh)
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onError = { /* fall through to login screen */ }
             )
-            db.collection("users").document(user.uid).collection("history").add(data)
+        } else if (savedToken != null && !biometricEnabled) {
+            AuthTokenStore.setToken(savedToken, savedRefresh)
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
         }
     }
 
-    // Fetch history from Firestore when user is logged in
-    LaunchedEffect(auth.currentUser) {
-        auth.currentUser?.let { user ->
-            db.collection("users").document(user.uid).collection("history")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .addSnapshotListener { snapshot, _ ->
-                    snapshot?.let {
-                        historyList.clear()
-                        for (doc in it.documents) {
-                            val type = doc.getString("type") ?: ""
-                            val score = doc.getLong("riskScore")?.toInt() ?: 0
-                            val levelStr = doc.getString("riskLevel") ?: "LOW"
-                            val level = try { RiskLevel.valueOf(levelStr) } catch(e: Exception) { RiskLevel.LOW }
-                            val summary = doc.getString("inputSummary") ?: ""
-                            val explanation = doc.getString("explanation") ?: ""
-                            val recommendation = doc.getString("recommendation") ?: ""
-                            
-                            val result = ScanResult(type, score, level, summary, emptyList(), explanation, recommendation)
-                            historyList.add(HistoryItem(doc.id, result, "Tersimpan"))
-                        }
+    fun mapApiResultToScanResult(result: com.example.scamshieldai.network.AnalysisResult): ScanResult {
+        val level = when (result.riskLevel.lowercase()) {
+            "high" -> RiskLevel.HIGH
+            "medium" -> RiskLevel.MEDIUM
+            else -> RiskLevel.LOW
+        }
+        val flags = result.redFlags?.map { it.label } ?: emptyList()
+        return ScanResult(
+            type = result.type,
+            riskScore = result.riskScore,
+            riskLevel = level,
+            inputSummary = result.inputSummary,
+            flags = flags,
+            explanation = result.explanation,
+            recommendation = result.recommendationText ?: result.recommendation,
+            relatedArticle = result.relatedEducationCategory
+        )
+    }
+
+    val fetchHistory: () -> Unit = {
+        coroutineScope.launch {
+            isHistoryLoading = true
+            repository.getHistory().onSuccess { response ->
+                historyList.clear()
+                for (item in response.data) {
+                    val scanResult = mapApiResultToScanResult(item)
+                    historyList.add(HistoryItem(item.scanId ?: "", scanResult, "Tersimpan"))
+                }
+            }.onFailure {
+                historyList.clear()
+                showError("Gagal memuat riwayat: ${it.message}")
+            }
+            isHistoryLoading = false
+        }
+    }
+
+    val fetchReportBadgeCounts: () -> Unit = {
+        coroutineScope.launch {
+            if (token == null) {
+                pendingMyReportsCount = 0
+                pendingAdminReportsCount = 0
+                return@launch
+            }
+            repository.getMyPendingReportCount().onSuccess { pendingMyReportsCount = it }
+            if (isAdmin) {
+                repository.getAdminPendingReportCount().onSuccess { pendingAdminReportsCount = it }
+            } else {
+                pendingAdminReportsCount = 0
+            }
+        }
+    }
+
+    val fetchMyReports: () -> Unit = {
+        coroutineScope.launch {
+            isMyReportsLoading = true
+            repository.getMyReports().onSuccess { list ->
+                myReports.clear()
+                myReports.addAll(list)
+            }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
+            isMyReportsLoading = false
+        }
+    }
+
+    LaunchedEffect(token) {
+        fetchHistory()
+        if (token != null) {
+            repository.getMe().onSuccess { me ->
+                userEmail = me.email ?: ""
+                isAdmin = me.admin
+                coroutineScope.launch {
+                    repository.getMyPendingReportCount().onSuccess { pendingMyReportsCount = it }
+                    if (me.admin) {
+                        repository.getAdminPendingReportCount().onSuccess { pendingAdminReportsCount = it }
+                    } else {
+                        pendingAdminReportsCount = 0
                     }
                 }
+            }
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { fcmToken ->
+                    coroutineScope.launch { repository.registerFcmToken(fcmToken) }
+                }
+        } else {
+            userEmail = ""
+            isAdmin = false
+            pendingMyReportsCount = 0
+            pendingAdminReportsCount = 0
         }
+    }
+
+    LaunchedEffect(pendingNotificationRoute, token, isAdmin) {
+        val route = pendingNotificationRoute ?: return@LaunchedEffect
+        when {
+            route.startsWith("report_status/") -> {
+                if (token == null) {
+                    showError("Silakan login untuk melihat laporan.")
+                } else {
+                    val reportId = route.removePrefix("report_status/")
+                    navController.navigate("report_status/$reportId")
+                }
+            }
+            route == "admin_reports" -> {
+                if (!isAdmin) {
+                    showError("Akses ditolak: hanya admin.")
+                } else {
+                    coroutineScope.launch {
+                        isAdminLoading = true
+                        repository.getAdminReports().onSuccess { list ->
+                            adminReports.clear()
+                            adminReports.addAll(list)
+                        }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
+                        isAdminLoading = false
+                    }
+                    navController.navigate("admin_reports")
+                }
+            }
+        }
+        onNotificationRouteConsumed()
     }
 
     val educationContents = remember {
@@ -309,12 +467,16 @@ fun ScamShieldApp() {
         )
     }
 
-    val navItems = listOf(
-        NavigationItemData("Beranda", "home", Icons.Filled.Home, Icons.Outlined.Home),
-        NavigationItemData("Riwayat", "history", Icons.Filled.History, Icons.Outlined.History),
-        NavigationItemData("Edukasi", "education_center", Icons.Filled.School, Icons.Outlined.School),
-        NavigationItemData("Profil", "profile", Icons.Filled.Person, Icons.Outlined.Person)
-    )
+    val profileNavBadge = if (isAdmin) pendingAdminReportsCount else pendingMyReportsCount
+
+    val navItems = remember(profileNavBadge) {
+        listOf(
+            NavigationItemData("Beranda", "home", Icons.Filled.Home, Icons.Outlined.Home),
+            NavigationItemData("Riwayat", "history", Icons.Filled.History, Icons.Outlined.History),
+            NavigationItemData("Edukasi", "education_center", Icons.Filled.School, Icons.Outlined.School),
+            NavigationItemData("Profil", "profile", Icons.Filled.Person, Icons.Outlined.Person, badgeCount = profileNavBadge)
+        )
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -331,13 +493,15 @@ fun ScamShieldApp() {
         "login", "register",
         "scan_chat", "check_link", "scan_screenshot", "scan_qr", 
         "analyzing", "result", "block_delete", "report", "quiz_screen",
-        "education_detail", "security_privacy", "notifications", "about"
+        "education_detail", "security_privacy", "notifications", "about",
+        "admin_reports", "my_reports", "report_status"
     )
     val showNavBar = !hideNavBarRoutes.any { currentRoute.startsWith(it) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = WhiteBackground
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Box(modifier = Modifier
             .fillMaxSize()
@@ -348,8 +512,12 @@ fun ScamShieldApp() {
                 modifier = Modifier.fillMaxSize()
             ) {
                 composable("login") {
+                    val loginContext = LocalContext.current
                     LoginScreen(
                         onLoginSuccess = {
+                            coroutineScope.launch {
+                                AppPreferences.setSavedToken(loginContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
+                            }
                             navController.navigate("home") {
                                 popUpTo("login") { inclusive = true }
                             }
@@ -360,8 +528,12 @@ fun ScamShieldApp() {
                     )
                 }
                 composable("register") {
+                    val regContext = LocalContext.current
                     RegisterScreen(
                         onRegisterSuccess = {
+                            coroutineScope.launch {
+                                AppPreferences.setSavedToken(regContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
+                            }
                             navController.navigate("home") {
                                 popUpTo("login") { inclusive = true }
                             }
@@ -404,19 +576,16 @@ fun ScamShieldApp() {
                     ScanChatScreen(
                         onBack = { navController.popBackStack() },
                         onAnalyze = { text ->
-                            val result = ScanResult(
-                                type = "chat",
-                                riskScore = 88,
-                                riskLevel = RiskLevel.HIGH,
-                                inputSummary = text,
-                                flags = listOf("Janji hadiah mencurigakan", "Tekanan waktu/urgensi", "Tautan tidak resmi", "Permintaan tindakan segera"),
-                                explanation = "Pesan ini mengandung beberapa tanda penipuan klasik: janji hadiah uang dalam jumlah besar, tekanan waktu (urgensi), dan tautan mencurigakan yang meniru domain resmi.",
-                                recommendation = "Jangan klik tautan apapun. Blokir nomor/akun pengirim. Laporkan ke platform terkait.",
-                                relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
-                            )
-                            lastResult = result
-                            saveHistory(result)
                             navController.navigate("analyzing")
+                            coroutineScope.launch {
+                                repository.analyzeChat(text).onSuccess { apiResult ->
+                                    lastResult = mapApiResultToScanResult(apiResult)
+                                    fetchHistory()
+                                }.onFailure {
+                                    showError("Gagal menganalisis: ${it.message}")
+                                    navController.popBackStack()
+                                }
+                            }
                         }
                     )
                 }
@@ -424,25 +593,16 @@ fun ScamShieldApp() {
                     CheckLinkScreen(
                         onBack = { navController.popBackStack() },
                         onCheck = { url ->
-                            val isScam = url.contains("promo") || url.contains("bri") || url.contains("bit.ly") || url.contains(".xyz")
-                            val result = ScanResult(
-                                type = "link",
-                                riskScore = if (isScam) 81 else 12,
-                                riskLevel = if (isScam) RiskLevel.HIGH else RiskLevel.LOW,
-                                inputSummary = url,
-                                flags = if (isScam) listOf(
-                                    "Domain tidak resmi (.xyz)",
-                                    "Meniru merek keuangan",
-                                    "Kata kunci phishing",
-                                    "Tidak ada HTTPS valid"
-                                ) else emptyList<String>(),
-                                explanation = if (isScam) "Tautan ini mengarah ke domain tidak resmi yang meniru merek perbankan/e-commerce Indonesia. Domain .xyz tidak digunakan oleh lembaga keuangan resmi. Pola URL menggunakan kata kunci \"hadiah\" dan \"verifikasi\" yang umum pada phishing." else "Tautan ini mengarah ke domain resmi yang terverifikasi dan aman untuk dikunjungi.",
-                                recommendation = if (isScam) "Jangan buka tautan ini. Hapus pesan yang berisi tautan. Laporkan ke pihak yang namanya digunakan." else "Tautan ini aman. Namun, tetap pastikan Anda berada di halaman yang benar sebelum memasukkan data sensitif.",
-                                relatedArticle = if (isScam) "Waspada Phishing: Kenali Tautan Palsu" else null
-                            )
-                            lastResult = result
-                            saveHistory(result)
                             navController.navigate("analyzing")
+                            coroutineScope.launch {
+                                repository.analyzeLink(url).onSuccess { apiResult ->
+                                    lastResult = mapApiResultToScanResult(apiResult)
+                                    fetchHistory()
+                                }.onFailure {
+                                    showError("Gagal menganalisis link: ${it.message}")
+                                    navController.popBackStack()
+                                }
+                            }
                         }
                     )
                 }
@@ -450,34 +610,29 @@ fun ScamShieldApp() {
                     ScanScreenshotScreen(
                         onBack = { navController.popBackStack() },
                         onAnalyzeText = { text ->
-                            val result = ScanResult(
-                                type = "screenshot",
-                                riskScore = 91,
-                                riskLevel = RiskLevel.HIGH,
-                                inputSummary = "Screenshot: $text",
-                                flags = listOf("Potensi penipuan dari teks"),
-                                explanation = "Hasil OCR mendeteksi teks mencurigakan yang mengarah ke pola penipuan digital.",
-                                recommendation = "Hati-hati dengan informasi dalam gambar ini.",
-                                relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
-                            )
-                            lastResult = result
-                            saveHistory(result)
                             navController.navigate("analyzing")
+                            coroutineScope.launch {
+                                repository.analyzeChat(text, source = "screenshot_ocr").onSuccess { apiResult ->
+                                    lastResult = mapApiResultToScanResult(apiResult)
+                                    fetchHistory()
+                                }.onFailure {
+                                    showError("Gagal menganalisis screenshot: ${it.message}")
+                                    navController.popBackStack()
+                                }
+                            }
                         },
                         onDemoSelected = {
-                            val result = ScanResult(
-                                type = "screenshot",
-                                riskScore = 91,
-                                riskLevel = RiskLevel.HIGH,
-                                inputSummary = "Screenshot Demo: \"Selamat! Anda terpilih mendapatkan hadiah Rp 25.000.000...\"",
-                                flags = listOf("Janji hadiah uang", "Domain palsu (.xyz)", "Urgensi waktu 24 jam", "Bukan kanal resmi BRI"),
-                                explanation = "Screenshot ini mengandung teks dengan indikator penipuan tinggi: janji hadiah uang dari lembaga keuangan, batas waktu klaim yang sangat pendek (24 jam), dan tautan ke domain tidak resmi (.xyz) yang meniru BRI.",
-                                recommendation = "Ini hampir pasti penipuan. Abaikan dan hapus pesan. Jangan klik tautan. Laporkan ke BRI melalui 14017 atau halo.bri.co.id.",
-                                relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
-                            )
-                            lastResult = result
-                            saveHistory(result)
+                            val demoText = "Selamat! Anda terpilih mendapatkan hadiah Rp 25.000.000 dari BRI. Klaim sekarang di http://bri-hadiah.xyz/klaim sebelum 24 jam."
                             navController.navigate("analyzing")
+                            coroutineScope.launch {
+                                repository.analyzeChat(demoText, source = "screenshot_ocr").onSuccess { apiResult ->
+                                    lastResult = mapApiResultToScanResult(apiResult)
+                                    fetchHistory()
+                                }.onFailure {
+                                    showError("Gagal menganalisis: ${it.message}")
+                                    navController.popBackStack()
+                                }
+                            }
                         }
                     )
                 }
@@ -485,19 +640,16 @@ fun ScamShieldApp() {
                     ScanQRScreen(
                         onBack = { navController.popBackStack() },
                         onScanned = { data ->
-                            val result = ScanResult(
-                                type = "qr",
-                                riskScore = 94,
-                                riskLevel = RiskLevel.HIGH,
-                                inputSummary = "QR Code: $data",
-                                flags = listOf("Tautan eksternal tidak aman", "Mengarahkan ke form data diri", "Domain mencurigakan"),
-                                explanation = "QR Code ini berisi tautan yang mengarah ke formulir pengumpulan data pribadi ilegal. Modus ini sering digunakan untuk mencuri kredensial akun.",
-                                recommendation = "Jangan pernah memasukkan data KTP atau nomor rekening pada halaman yang dibuka dari QR ini. Laporkan jika diminta melakukan pembayaran.",
-                                relatedArticle = "Waspada QR Phishing (Quishing)"
-                            )
-                            lastResult = result
-                            saveHistory(result)
                             navController.navigate("analyzing")
+                            coroutineScope.launch {
+                                repository.analyzeQr(data).onSuccess { apiResult ->
+                                    lastResult = mapApiResultToScanResult(apiResult)
+                                    fetchHistory()
+                                }.onFailure {
+                                    showError("Gagal menganalisis QR: ${it.message}")
+                                    navController.popBackStack()
+                                }
+                            }
                         }
                     )
                 }
@@ -540,15 +692,58 @@ fun ScamShieldApp() {
                 composable("history") {
                     HistoryScreen(
                         historyList = historyList,
+                        isLoading = isHistoryLoading,
                         onBack = { navController.popBackStack() },
                         onItemClick = { item ->
                             lastResult = item.result
                             navController.navigate("result")
-                        }
+                        },
+                        onDeleteItem = { item ->
+                            coroutineScope.launch {
+                                repository.deleteHistory(item.id)
+                                    .onSuccess { fetchHistory() }
+                                    .onFailure { showError("Gagal menghapus: ${it.message}") }
+                            }
+                        },
+                        onRefresh = { fetchHistory() }
                     )
                 }
                 composable("profile") {
+                    val context = LocalContext.current
+                    val isDarkMode by AppPreferences.darkModeFlow(context).collectAsState(initial = false)
+                    val isBiometricEnabled by AppPreferences.biometricEnabledFlow(context).collectAsState(initial = false)
+                    LaunchedEffect(Unit) { fetchReportBadgeCounts() }
                     ProfileScreen(
+                        userName = userEmail.substringBefore("@").ifEmpty { "Pengguna ScamShield" },
+                        userEmail = userEmail,
+                        scanCount = historyList.size,
+                        threatCount = historyList.count { it.result.riskLevel == RiskLevel.HIGH },
+                        isDarkMode = isDarkMode,
+                        isBiometricEnabled = isBiometricEnabled,
+                        isAdmin = isAdmin,
+                        pendingMyReportsCount = pendingMyReportsCount,
+                        pendingAdminReportsCount = pendingAdminReportsCount,
+                        onDarkModeToggle = { enabled ->
+                            coroutineScope.launch { AppPreferences.setDarkMode(context, enabled) }
+                        },
+                        onBiometricToggle = { enabled ->
+                            coroutineScope.launch { AppPreferences.setBiometricEnabled(context, enabled) }
+                        },
+                        onAdminReportsClick = {
+                            coroutineScope.launch {
+                                isAdminLoading = true
+                                repository.getAdminReports().onSuccess { list ->
+                                    adminReports.clear()
+                                    adminReports.addAll(list)
+                                }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
+                                isAdminLoading = false
+                            }
+                            navController.navigate("admin_reports")
+                        },
+                        onMyReportsClick = {
+                            fetchMyReports()
+                            navController.navigate("my_reports")
+                        },
                         onSecurityClick = {
                             navController.navigate("security_privacy")
                         },
@@ -557,8 +752,95 @@ fun ScamShieldApp() {
                         },
                         onAboutClick = {
                             navController.navigate("about")
+                        },
+                        onLogout = {
+                            AuthTokenStore.clear()
+                            historyList.clear()
+                            coroutineScope.launch { AppPreferences.setSavedToken(context, null) }
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
                         }
                     )
+                }
+                composable("my_reports") {
+                    MyReportsScreen(
+                        reports = myReports,
+                        isLoading = isMyReportsLoading,
+                        onBack = { navController.popBackStack() },
+                        onReportClick = { report ->
+                            navController.navigate("report_status/${report.reportId}")
+                        }
+                    )
+                }
+                composable(
+                    route = "report_status/{report_id}",
+                    arguments = listOf(navArgument("report_id") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val reportId = backStackEntry.arguments?.getString("report_id") ?: ""
+                    LaunchedEffect(reportId) {
+                        if (reportId.isNotEmpty()) {
+                            isReportDetailLoading = true
+                            reportDetail = null
+                            repository.getMyReport(reportId).onSuccess { reportDetail = it }
+                                .onFailure {
+                                    showError("Gagal memuat detail: ${it.message}")
+                                    reportDetail = null
+                                }
+                            isReportDetailLoading = false
+                        }
+                    }
+                    ReportStatusScreen(
+                        report = if (reportDetail?.reportId == reportId) reportDetail else null,
+                        isLoading = isReportDetailLoading,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable("admin_reports") {
+                    if (!isAdmin) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("profile") {
+                                popUpTo(navController.graph.findStartDestination().id) { inclusive = false }
+                            }
+                            showError("Akses ditolak: hanya admin yang bisa mengelola laporan.")
+                        }
+                    } else {
+                        AdminReportsScreen(
+                            reports = adminReports,
+                            isLoading = isAdminLoading,
+                            onBack = { navController.popBackStack() },
+                            onVerify = { reportId ->
+                                coroutineScope.launch {
+                                    repository.updateReportStatus(reportId, "verified").onSuccess { result ->
+                                        adminReports.replaceAll {
+                                            if (it.reportId == reportId) it.copy(
+                                                verifiedStatus = "verified",
+                                                verifiedBy = result.verifiedBy,
+                                                verifiedByEmail = result.verifiedByEmail,
+                                                verifiedAt = result.verifiedAt
+                                            ) else it
+                                        }
+                                        fetchReportBadgeCounts()
+                                    }.onFailure { showError("Gagal verifikasi: ${it.message}") }
+                                }
+                            },
+                            onReject = { reportId ->
+                                coroutineScope.launch {
+                                    repository.updateReportStatus(reportId, "rejected").onSuccess { result ->
+                                        adminReports.replaceAll {
+                                            if (it.reportId == reportId) it.copy(
+                                                verifiedStatus = "rejected",
+                                                verifiedBy = result.verifiedBy,
+                                                verifiedByEmail = result.verifiedByEmail,
+                                                verifiedAt = result.verifiedAt
+                                            ) else it
+                                        }
+                                        fetchReportBadgeCounts()
+                                    }.onFailure { showError("Gagal menolak: ${it.message}") }
+                                }
+                            }
+                        )
+                    }
                 }
                 composable("security_privacy") {
                     SecurityPrivacyScreen(
@@ -591,6 +873,13 @@ fun ScamShieldApp() {
                             navController.navigate("home") {
                                 popUpTo("home") { inclusive = true }
                             }
+                        },
+                        onSubmitReport = { type, content, note ->
+                            coroutineScope.launch {
+                                repository.submitReport(type, content, note).onSuccess {
+                                    fetchReportBadgeCounts()
+                                }
+                            }
                         }
                     )
                 }
@@ -605,13 +894,13 @@ fun ScamShieldApp() {
                 }
                 composable("result") {
                     val result = lastResult ?: ScanResult(
-                        type = "demo",
+                        type = "unknown",
                         riskScore = 0,
                         riskLevel = RiskLevel.LOW,
-                        inputSummary = "Demo text",
+                        inputSummary = "",
                         flags = emptyList<String>(),
-                        explanation = "Demo explanation",
-                        recommendation = "Demo recommendation"
+                        explanation = "Tidak ada hasil analisis.",
+                        recommendation = "Silakan lakukan scan terlebih dahulu."
                     )
                     ResultScreen(
                         result = result,
