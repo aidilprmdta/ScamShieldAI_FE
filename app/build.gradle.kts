@@ -4,20 +4,16 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
-import org.json.JSONObject
 import java.io.File
 
 fun readGoogleWebClientId(googleServicesFile: File): String {
     if (!googleServicesFile.exists()) return ""
-    val root = JSONObject(googleServicesFile.readText())
-    val clients = root.optJSONArray("client") ?: return ""
-    for (i in 0 until clients.length()) {
-        val oauthClients = clients.getJSONObject(i).optJSONArray("oauth_client") ?: continue
-        for (j in 0 until oauthClients.length()) {
-            val item = oauthClients.getJSONObject(j)
-            if (item.optInt("client_type") == 3) {
-                return item.optString("client_id", "")
-            }
+    val text = googleServicesFile.readText()
+    val oauthSections = text.split("\"oauth_client\"")
+    for (section in oauthSections) {
+        if (section.contains("\"client_type\": 3") || section.contains("\"client_type\":3")) {
+            val match = Regex("\"client_id\":\\s*\"([^\"]+)\"").find(section)
+            if (match != null) return match.groupValues[1]
         }
     }
     return ""
