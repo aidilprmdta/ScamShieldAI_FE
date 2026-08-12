@@ -1,7 +1,5 @@
 package com.example.scamshieldai.ui.screens
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -16,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -28,18 +25,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
 import com.example.scamshieldai.R
-import com.example.scamshieldai.auth.AuthTokenStore
-import com.example.scamshieldai.auth.GoogleAuthHelper
+import com.example.scamshieldai.auth.AuthValidation
+import com.example.scamshieldai.auth.GoogleSignInHelper
 import com.example.scamshieldai.network.ScamShieldRepository
 import com.example.scamshieldai.ui.theme.*
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun LoginScreen(
@@ -49,13 +40,23 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    Log.d("LoginScreen", "LoginScreen Composing")
+    val repository = remember { ScamShieldRepository() }
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var isGoogleLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val trimmedEmail = email.trim()
+    val emailError = AuthValidation.emailError(trimmedEmail)
+    val isEnabled = trimmedEmail.isNotBlank() &&
+        emailError == null &&
+        password.length >= 6 &&
+        !isLoading &&
+        !isGoogleLoading
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -69,15 +70,13 @@ fun LoginScreen(
             .fillMaxSize()
             .background(YaleBlue)
     ) {
-        // Decorative Blobs
         Canvas(modifier = Modifier.size(200.dp).offset(x = (-50).dp, y = (-50).dp)) {
             drawCircle(
                 color = Color.White.copy(alpha = 0.05f),
                 radius = size.minDimension / 1.2f
             )
         }
-        
-        // Hero Section Content
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,7 +96,6 @@ fun LoginScreen(
             )
         }
 
-        // Overlapping Logo
         Image(
             painter = painterResource(id = R.drawable.logoapp_removebg),
             contentDescription = "Logo",
@@ -109,7 +107,6 @@ fun LoginScreen(
                 .zIndex(1f)
         )
 
-        // Form Card
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -134,7 +131,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Email Input
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -142,6 +138,8 @@ fun LoginScreen(
                     label = { Text("Email") },
                     leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null, tint = Slate400) },
                     shape = RoundedCornerShape(16.dp),
+                    isError = emailError != null,
+                    supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = YaleBlue,
                         unfocusedBorderColor = Slate100,
@@ -155,7 +153,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Password Input
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -193,15 +190,11 @@ fun LoginScreen(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .align(Alignment.End)
-                        .clickable { }
+                        .clickable { errorMessage = "Fitur reset password belum tersedia." }
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Login Button with Dynamic Color
-                val isEnabled = email.isNotBlank() && password.length >= 6 && !isLoading
-                val repository = remember { ScamShieldRepository() }
-                
                 val buttonColor by animateColorAsState(
                     targetValue = if (isEnabled) YaleBlue else Slate100,
                     label = "buttonColor"
@@ -215,7 +208,7 @@ fun LoginScreen(
                     onClick = {
                         isLoading = true
                         scope.launch {
-                            repository.login(email.trim(), password)
+                            repository.login(trimmedEmail, password)
                                 .onSuccess {
                                     isLoading = false
                                     onLoginSuccess()
@@ -260,7 +253,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // OR Separator
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -277,35 +269,50 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Google Login Button (Full Width with Official Logo)
                 OutlinedButton(
                     onClick = {
-                        handleGoogleLogin(context, scope, onLoginSuccess) { errorMessage = it }
+                        isGoogleLoading = true
+                        scope.launch {
+                            GoogleSignInHelper.signIn(context, repository)
+                                .onSuccess {
+                                    isGoogleLoading = false
+                                    onLoginSuccess()
+                                }
+                                .onFailure {
+                                    isGoogleLoading = false
+                                    errorMessage = it.message ?: "Google login gagal"
+                                }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
                     border = BorderStroke(1.dp, Slate100),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PrussianBlue)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PrussianBlue),
+                    enabled = !isLoading && !isGoogleLoading
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google_logo),
-                            contentDescription = "Google Logo",
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Continue with Google",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = PrussianBlue
-                        )
+                    if (isGoogleLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google_logo),
+                                contentDescription = "Google Logo",
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Continue with Google",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = PrussianBlue
+                            )
+                        }
                     }
                 }
 
@@ -317,39 +324,6 @@ fun LoginScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
-    }
-}
-
-
-private fun handleGoogleLogin(
-    context: Context,
-    scope: CoroutineScope,
-    onSuccess: () -> Unit,
-    onError: (String) -> Unit = {}
-) {
-    val credentialManager = CredentialManager.create(context)
-    val repository = ScamShieldRepository()
-
-    scope.launch {
-        try {
-            val serverClientId = GoogleAuthHelper.getServerClientId(context)
-            val googleIdOption = GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(serverClientId)
-                .build()
-
-            val request = GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
-                .build()
-
-            val result = credentialManager.getCredential(context = context, request = request)
-            val googleCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
-            repository.googleLogin(googleCredential.idToken)
-                .onSuccess { onSuccess() }
-                .onFailure { onError(it.message ?: "Google login gagal") }
-        } catch (e: Exception) {
-            onError(e.message ?: "Google login gagal")
-        }
     }
 }
 
