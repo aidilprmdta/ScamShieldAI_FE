@@ -34,8 +34,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.scamshieldai.auth.AuthTokenStore
 import com.example.scamshieldai.model.EducationContent
+import com.example.scamshieldai.model.EducationMatcher
 import com.example.scamshieldai.network.ScamShieldRepository
 import com.example.scamshieldai.settings.AppPreferences
+import com.example.scamshieldai.settings.HistoryAutoCleaner
 import com.example.scamshieldai.ui.components.AnalyzingOverlay
 import com.example.scamshieldai.ui.components.FloatingNavBar
 import com.example.scamshieldai.ui.components.NavigationItemData
@@ -110,7 +112,6 @@ fun ScamShieldApp(
     
     val snackbarHostState = remember { SnackbarHostState() }
     var lastResult by remember { mutableStateOf<ScanResult?>(null) }
-    var isAnalyzing by remember { mutableStateOf(false) }
     var completedEducationIds by remember { mutableStateOf(setOf<String>()) }
     val historyList = remember { mutableStateListOf<HistoryItem>() }
     var isHistoryLoading by remember { mutableStateOf(false) }
@@ -168,6 +169,12 @@ fun ScamShieldApp(
         coroutineScope.launch {
             isHistoryLoading = true
             historyError = null
+
+            val autoClean = AppPreferences.autoCleanEnabledFlow(context).first()
+            if (autoClean && token != null) {
+                HistoryAutoCleaner.cleanOldHistory(repository)
+            }
+
             repository.getHistory().onSuccess { response ->
                 historyList.clear()
                 for (item in response.data) {
@@ -528,7 +535,7 @@ fun ScamShieldApp(
         "login", "register",
         "scan_chat", "check_link", "scan_screenshot", "scan_qr", 
         "analyzing", "result", "block_delete", "report", "quiz_screen",
-        "education_detail", "security_privacy", "notifications", "about",
+        "education_detail", "security_privacy", "permission_management", "notifications", "about",
         "admin_reports", "my_reports", "report_status", "edit_profile", "help_center"
     )
     val showNavBar = !hideNavBarRoutes.any { currentRoute.startsWith(it) }
@@ -615,6 +622,9 @@ fun ScamShieldApp(
                             coroutineScope.launch {
                                 repository.analyzeChat(text).onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
+                                    navController.navigate("result") {
+                                        popUpTo("analyzing") { inclusive = true }
+                                    }
                                     fetchHistory()
                                     if (token == null) {
                                         showError("Login agar hasil scan tersimpan di Riwayat")
@@ -635,6 +645,9 @@ fun ScamShieldApp(
                             coroutineScope.launch {
                                 repository.analyzeLink(url).onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
+                                    navController.navigate("result") {
+                                        popUpTo("analyzing") { inclusive = true }
+                                    }
                                     fetchHistory()
                                     if (token == null) {
                                         showError("Login agar hasil scan tersimpan di Riwayat")
@@ -655,6 +668,9 @@ fun ScamShieldApp(
                             coroutineScope.launch {
                                 repository.analyzeChat(text, source = "screenshot_ocr").onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
+                                    navController.navigate("result") {
+                                        popUpTo("analyzing") { inclusive = true }
+                                    }
                                     fetchHistory()
                                 }.onFailure {
                                     showError("Gagal menganalisis screenshot: ${it.message}")
@@ -668,6 +684,9 @@ fun ScamShieldApp(
                             coroutineScope.launch {
                                 repository.analyzeChat(demoText, source = "screenshot_ocr").onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
+                                    navController.navigate("result") {
+                                        popUpTo("analyzing") { inclusive = true }
+                                    }
                                     fetchHistory()
                                 }.onFailure {
                                     showError("Gagal menganalisis: ${it.message}")
@@ -685,6 +704,9 @@ fun ScamShieldApp(
                             coroutineScope.launch {
                                 repository.analyzeQr(data).onSuccess { apiResult ->
                                     lastResult = mapApiResultToScanResult(apiResult)
+                                    navController.navigate("result") {
+                                        popUpTo("analyzing") { inclusive = true }
+                                    }
                                     fetchHistory()
                                 }.onFailure {
                                     showError("Gagal menganalisis QR: ${it.message}")
@@ -836,7 +858,8 @@ fun ScamShieldApp(
                         onBack = { navController.popBackStack() },
                         onReportClick = { report ->
                             navController.navigate("report_status/${report.reportId}")
-                        }
+                        },
+                        onRefresh = { fetchMyReports() }
                     )
                 }
                 composable(
@@ -875,6 +898,16 @@ fun ScamShieldApp(
                             reports = adminReports,
                             isLoading = isAdminLoading,
                             onBack = { navController.popBackStack() },
+                            onRefresh = {
+                                coroutineScope.launch {
+                                    isAdminLoading = true
+                                    repository.getAdminReports().onSuccess { list ->
+                                        adminReports.clear()
+                                        adminReports.addAll(list)
+                                    }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
+                                    isAdminLoading = false
+                                }
+                            },
                             onVerify = { reportId ->
                                 coroutineScope.launch {
                                     repository.updateReportStatus(reportId, "verified").onSuccess { result ->
@@ -887,6 +920,7 @@ fun ScamShieldApp(
                                             ) else it
                                         }
                                         fetchReportBadgeCounts()
+                                        showError("Laporan diverifikasi")
                                     }.onFailure { showError("Gagal verifikasi: ${it.message}") }
                                 }
                             },
@@ -902,6 +936,7 @@ fun ScamShieldApp(
                                             ) else it
                                         }
                                         fetchReportBadgeCounts()
+                                        showError("Laporan ditolak")
                                     }.onFailure { showError("Gagal menolak: ${it.message}") }
                                 }
                             }
@@ -910,6 +945,25 @@ fun ScamShieldApp(
                 }
                 composable("security_privacy") {
                     SecurityPrivacyScreen(
+                        onBack = { navController.popBackStack() },
+                        onManagePermissions = { navController.navigate("permission_management") },
+                        onAutoCleanEnabled = {
+                            coroutineScope.launch {
+                                if (token == null) {
+                                    showError("Login diperlukan untuk membersihkan riwayat")
+                                    return@launch
+                                }
+                                val deleted = HistoryAutoCleaner.cleanOldHistory(repository)
+                                fetchHistory()
+                                if (deleted > 0) {
+                                    showError("Pembersihan otomatis: $deleted riwayat lama dihapus")
+                                }
+                            }
+                        }
+                    )
+                }
+                composable("permission_management") {
+                    PermissionManagementScreen(
                         onBack = { navController.popBackStack() }
                     )
                 }
@@ -966,23 +1020,23 @@ fun ScamShieldApp(
                                 popUpTo("home") { inclusive = true }
                             }
                         },
-                        onSubmitReport = { type, content, note ->
+                        onSubmitReport = { type, content, note, onResult ->
                             coroutineScope.launch {
-                                repository.submitReport(type, content, note).onSuccess {
-                                    fetchReportBadgeCounts()
-                                }
+                                repository.submitReport(type, content, note)
+                                    .onSuccess {
+                                        fetchReportBadgeCounts()
+                                        fetchMyReports()
+                                        onResult(true, null)
+                                    }
+                                    .onFailure { err ->
+                                        onResult(false, err.message ?: "Gagal mengirim laporan")
+                                    }
                             }
                         }
                     )
                 }
                 composable("analyzing") {
-                    AnalyzingOverlay(
-                        onAnalysisComplete = {
-                            navController.navigate("result") {
-                                popUpTo("analyzing") { inclusive = true }
-                            }
-                        }
-                    )
+                    AnalyzingOverlay()
                 }
                 composable("result") {
                     val result = lastResult ?: ScanResult(
@@ -994,6 +1048,16 @@ fun ScamShieldApp(
                         explanation = "Tidak ada hasil analisis.",
                         recommendation = "Silakan lakukan scan terlebih dahulu."
                     )
+                    val relatedEducation = remember(result.relatedArticle, result.riskLevel) {
+                        val shouldOffer = result.riskLevel != RiskLevel.LOW ||
+                            !result.relatedArticle.isNullOrBlank()
+                        if (!shouldOffer) null
+                        else EducationMatcher.findByCategory(
+                            category = result.relatedArticle,
+                            contents = educationContents,
+                            fallbackToFeatured = result.riskLevel != RiskLevel.LOW,
+                        )
+                    }
                     ResultScreen(
                         result = result,
                         onBackToHome = {
@@ -1009,6 +1073,12 @@ fun ScamShieldApp(
                         },
                         onReportClick = {
                             navController.navigate("report")
+                        },
+                        learnMoreTitle = relatedEducation?.title,
+                        onLearnMoreClick = relatedEducation?.let { content ->
+                            {
+                                navController.navigate("education_detail/${content.id}")
+                            }
                         }
                     )
                 }
