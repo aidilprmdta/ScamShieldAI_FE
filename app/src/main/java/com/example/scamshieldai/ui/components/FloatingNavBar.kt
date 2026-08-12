@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,7 +23,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.ui.theme.Cerulean
+import com.example.scamshieldai.ui.theme.DangerRed
 import com.example.scamshieldai.ui.theme.PrussianBlue
 
 import androidx.compose.ui.zIndex
@@ -86,6 +89,26 @@ fun FloatingNavBar(
                             tint = animatedIconColor,
                             modifier = Modifier.size(24.dp)
                         )
+                        if (item.badgeCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 6.dp, y = (-6).dp)
+                                    .defaultMinSize(minWidth = 18.dp, minHeight = 18.dp)
+                                    .clip(CircleShape)
+                                    .background(DangerRed)
+                                    .padding(horizontal = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (item.badgeCount > 99) "99+" else item.badgeCount.toString(),
+                                    color = Color.White,
+                                    fontSize = 9.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -97,5 +120,6 @@ data class NavigationItemData(
     val title: String,
     val route: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
+    val badgeCount: Int = 0
 )
