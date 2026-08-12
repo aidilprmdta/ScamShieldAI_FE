@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
@@ -27,6 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import com.example.scamshieldai.ui.theme.*
 
 data class HistoryItem(
@@ -35,11 +38,15 @@ data class HistoryItem(
     val timeAgo: String
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     historyList: List<HistoryItem>,
+    isLoading: Boolean = false,
     onBack: () -> Unit,
     onItemClick: (HistoryItem) -> Unit,
+    onDeleteItem: (HistoryItem) -> Unit = {},
+    onRefresh: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedFilter by remember { mutableStateOf("Semua") }
@@ -132,37 +139,79 @@ fun HistoryScreen(
             }
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 24.dp, bottom = 110.dp)
-        ) {
-            // Filter Chips
-            item {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+        val pullRefreshState = rememberPullToRefreshState()
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = isLoading,
+                onRefresh = onRefresh,
+                state = pullRefreshState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 24.dp, bottom = 110.dp)
                 ) {
-                    val filters = listOf("Semua", "Risiko Tinggi", "Risiko Sedang", "Aman")
-                    items(filters) { filter ->
-                        FilterChip(
-                            label = filter,
-                            isSelected = selectedFilter == filter,
-                            onClick = { selectedFilter = filter }
+                    item {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val filters = listOf("Semua", "Risiko Tinggi", "Risiko Sedang", "Aman")
+                            items(filters) { filter ->
+                                FilterChip(
+                                    label = filter,
+                                    isSelected = selectedFilter == filter,
+                                    onClick = { selectedFilter = filter }
+                                )
+                            }
+                        }
+                    }
+
+                    if (!isLoading && filteredList.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 80.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.ChatBubbleOutline,
+                                        contentDescription = null,
+                                        tint = Slate400,
+                                        modifier = Modifier.size(64.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Belum ada riwayat",
+                                        color = Slate500,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = "Hasil deteksi akan muncul di sini",
+                                        color = Slate400,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    items(filteredList) { item ->
+                        HistoryCard(
+                            item = item,
+                            onClick = { onItemClick(item) },
+                            onDelete = { onDeleteItem(item) },
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                         )
                     }
                 }
-            }
-
-            // History Items
-            items(filteredList) { item ->
-                HistoryCard(
-                    item = item,
-                    onClick = { onItemClick(item) },
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-                )
             }
         }
     }
@@ -230,6 +279,7 @@ private fun FilterChip(
 private fun HistoryCard(
     item: HistoryItem,
     onClick: () -> Unit,
+    onDelete: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val result = item.result
@@ -328,6 +378,15 @@ private fun HistoryCard(
                     color = Slate500,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Hapus",
+                    tint = Slate500.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clickable { onDelete() }
                 )
             }
         }
