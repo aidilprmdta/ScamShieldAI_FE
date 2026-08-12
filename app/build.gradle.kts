@@ -9,11 +9,16 @@ plugins {
 fun readGoogleWebClientId(googleServicesFile: File): String {
     if (!googleServicesFile.exists()) return ""
     val text = googleServicesFile.readText()
-    val oauthSections = text.split("\"oauth_client\"")
-    for (section in oauthSections) {
-        if (section.contains("\"client_type\": 3") || section.contains("\"client_type\":3")) {
-            val match = Regex("\"client_id\":\\s*\"([^\"]+)\"").find(section)
-            if (match != null) return match.groupValues[1]
+    // Look for client_id immediately followed by client_type 3
+    val match = Regex("\"client_id\":\\s*\"([^\"]+)\",\\s*\"client_type\":\\s*3").find(text)
+    if (match != null) return match.groupValues[1]
+    
+    // Fallback: split by curly braces to find the object containing client_type 3
+    val blocks = text.split("{")
+    for (block in blocks) {
+        if (block.contains("\"client_type\": 3") || block.contains("\"client_type\":3")) {
+            val idMatch = Regex("\"client_id\":\\s*\"([^\"]+)\"").find(block)
+            if (idMatch != null) return idMatch.groupValues[1]
         }
     }
     return ""
@@ -32,7 +37,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.95.17.218:8000/\"")
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
@@ -42,7 +47,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8000/\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.95.17.218:8000/\"")
         }
         release {
             buildConfigField("String", "BASE_URL", "\"https://api.scamshieldai.com/\"")
@@ -103,7 +108,6 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.datastore.preferences)
-    implementation(libs.androidx.biometric)
     implementation(libs.firebase.messaging)
 
     debugImplementation(libs.androidx.ui.tooling)
