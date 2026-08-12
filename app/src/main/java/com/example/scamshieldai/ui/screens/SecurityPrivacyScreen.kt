@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 fun SecurityPrivacyScreen(
     onBack: () -> Unit,
     onManagePermissions: () -> Unit = {},
+    onChangePassword: (() -> Unit)? = null,
     onAutoCleanEnabled: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -83,9 +84,9 @@ fun SecurityPrivacyScreen(
                 SecurityNavItem(
                     icon = Icons.Default.Password,
                     label = "Ubah Kata Sandi",
-                    description = "Kelola melalui akun Google / email Anda",
+                    description = "Ganti kata sandi akun email Anda",
                     iconTint = WarningYellow,
-                    onClick = null
+                    onClick = onChangePassword
                 )
             }
 
