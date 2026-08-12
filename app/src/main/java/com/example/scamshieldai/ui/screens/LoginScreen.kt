@@ -30,14 +30,15 @@ import androidx.compose.ui.zIndex
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import com.example.scamshieldai.R
+import com.example.scamshieldai.auth.AuthTokenStore
+import com.example.scamshieldai.auth.GoogleAuthHelper
+import com.example.scamshieldai.network.ScamShieldRepository
 import com.example.scamshieldai.ui.theme.*
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreen(
@@ -51,6 +52,15 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            errorMessage = null
+        }
+    }
 
     Box(
         modifier = modifier
@@ -188,7 +198,7 @@ fun LoginScreen(
 
                 // Login Button with Dynamic Color
                 val isEnabled = email.isNotBlank() && password.length >= 6 && !isLoading
-                val auth = FirebaseAuth.getInstance()
+                val repository = remember { ScamShieldRepository() }
                 
                 val buttonColor by animateColorAsState(
                     targetValue = if (isEnabled) YaleBlue else Slate100,
@@ -202,14 +212,17 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         isLoading = true
-                        auth.signInWithEmailAndPassword(email, password)
-                            .addOnSuccessListener {
-                                isLoading = false
-                                onLoginSuccess()
-                            }
-                            .addOnFailureListener {
-                                isLoading = false
-                            }
+                        scope.launch {
+                            repository.login(email.trim(), password)
+                                .onSuccess {
+                                    isLoading = false
+                                    onLoginSuccess()
+                                }
+                                .onFailure {
+                                    isLoading = false
+                                    errorMessage = it.message ?: "Login gagal"
+                                }
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -265,7 +278,7 @@ fun LoginScreen(
                 // Google Login Button (Full Width with Official Logo)
                 OutlinedButton(
                     onClick = {
-                        handleGoogleLogin(context, scope, onLoginSuccess)
+                        handleGoogleLogin(context, scope, onLoginSuccess) { errorMessage = it }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -297,6 +310,11 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -304,29 +322,31 @@ fun LoginScreen(
 private fun handleGoogleLogin(
     context: Context,
     scope: CoroutineScope,
-    onSuccess: () -> Unit
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit = {}
 ) {
     val credentialManager = CredentialManager.create(context)
-    val serverClientId = "YOUR_SERVER_CLIENT_ID.apps.googleusercontent.com"
-    
-    val googleIdOption = GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(false)
-        .setServerClientId(serverClientId)
-        .build()
-
-    val request = GetCredentialRequest.Builder()
-        .addCredentialOption(googleIdOption)
-        .build()
+    val repository = ScamShieldRepository()
 
     scope.launch {
         try {
+            val serverClientId = GoogleAuthHelper.getServerClientId(context)
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(serverClientId)
+                .build()
+
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
             val result = credentialManager.getCredential(context = context, request = request)
-            val credential = result.credential
-            if (credential is GoogleIdTokenCredential) {
-                onSuccess()
-            }
+            val googleCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
+            repository.googleLogin(googleCredential.idToken)
+                .onSuccess { onSuccess() }
+                .onFailure { onError(it.message ?: "Google login gagal") }
         } catch (e: Exception) {
-            onSuccess() // Fallback for demo
+            onError(e.message ?: "Google login gagal")
         }
     }
 }
