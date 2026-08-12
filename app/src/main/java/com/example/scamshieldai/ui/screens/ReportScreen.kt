@@ -31,6 +31,7 @@ import com.example.scamshieldai.ui.theme.*
 fun ReportScreen(
     onBack: () -> Unit,
     onSubmit: () -> Unit,
+    onSubmitReport: ((type: String, content: String, note: String?) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedCategory by remember { mutableStateOf("") }
@@ -226,7 +227,20 @@ fun ReportScreen(
                         if (isEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
                         else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
                     )
-                    .clickable(enabled = isEnabled) { isSubmitted = true },
+                    .clickable(enabled = isEnabled) {
+                        val reportType = when (selectedCategory) {
+                            "Phishing / Tautan Palsu" -> "link"
+                            "Penipuan Hadiah / Uang" -> "chat"
+                            "Pencurian Akun" -> "chat"
+                            "Modus Rekayasa Sosial" -> "chat"
+                            "Lainnya" -> "other"
+                            else -> "other"
+                        }
+                        val content = if (selectedCategory == "Lainnya") otherCategoryDetail else selectedCategory
+                        val note = reportDetail.ifBlank { null }
+                        onSubmitReport?.invoke(reportType, content, note)
+                        isSubmitted = true
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
