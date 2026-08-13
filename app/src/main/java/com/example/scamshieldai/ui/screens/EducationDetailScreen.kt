@@ -138,7 +138,7 @@ fun EducationDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Selesai Membaca ✓",
+                        text = "Selesai membaca",
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
@@ -162,16 +162,12 @@ private fun ProtectionTipsCard(tips: List<String>) {
             .padding(24.dp)
     ) {
         Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("💡", fontSize = 18.sp)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Tips Perlindungan",
-                    color = PrussianBlue,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text(
+                "Tips perlindungan",
+                color = PrussianBlue,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
             
             Spacer(modifier = Modifier.height(20.dp))
             
