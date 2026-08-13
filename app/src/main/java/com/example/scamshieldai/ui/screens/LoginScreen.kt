@@ -83,13 +83,14 @@ fun LoginScreen(
                 .padding(top = 60.dp, start = 32.dp, end = 24.dp)
         ) {
             Text(
-                text = "Hello!",
+                text = "ScamShield",
                 color = Color.White,
-                fontSize = 42.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontFamily = DisplayFontFamily,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Welcome back to ScamShield AI",
+                text = "Masuk untuk menyimpan riwayat analisis",
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -241,9 +242,9 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Don't have an account? ", color = Slate500, fontSize = 14.sp)
+                    Text("Belum punya akun? ", color = Slate500, fontSize = 14.sp)
                     Text(
-                        text = "Sign Up",
+                        text = "Daftar",
                         color = Cerulean,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -307,7 +308,7 @@ fun LoginScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Continue with Google",
+                                text = "Lanjut dengan Google",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrussianBlue
