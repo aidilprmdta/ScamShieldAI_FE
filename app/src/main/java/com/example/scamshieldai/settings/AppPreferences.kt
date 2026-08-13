@@ -19,6 +19,9 @@ object AppPreferences {
     private val NOTIF_SECURITY = booleanPreferencesKey("notif_security")
     private val NOTIF_EDUCATION = booleanPreferencesKey("notif_education")
     private val NOTIF_SYSTEM = booleanPreferencesKey("notif_system")
+    private val AUTO_CLEAN_ENABLED = booleanPreferencesKey("auto_clean_enabled")
+
+    const val AUTO_CLEAN_DAYS = 30
 
     fun savedTokenFlow(context: Context): Flow<String?> =
         context.dataStore.data.map { it[SAVED_TOKEN] }
@@ -64,5 +67,12 @@ object AppPreferences {
 
     suspend fun setNotifSystem(context: Context, enabled: Boolean) {
         context.dataStore.edit { it[NOTIF_SYSTEM] = enabled }
+    }
+
+    fun autoCleanEnabledFlow(context: Context): Flow<Boolean> =
+        context.dataStore.data.map { it[AUTO_CLEAN_ENABLED] ?: false }
+
+    suspend fun setAutoCleanEnabled(context: Context, enabled: Boolean) {
+        context.dataStore.edit { it[AUTO_CLEAN_ENABLED] = enabled }
     }
 }
