@@ -36,6 +36,12 @@ interface ScamShieldApi {
         @Header("Authorization") token: String
     ): Response<UpdateProfileResponse>
 
+    @POST("api/v1/auth/change-password")
+    suspend fun changePassword(
+        @Body request: ChangePasswordRequest,
+        @Header("Authorization") token: String
+    ): Response<ChangePasswordResponse>
+
     @POST("api/v1/analyze/chat")
     suspend fun analyzeChat(
         @Body request: AnalyzeChatRequest,
