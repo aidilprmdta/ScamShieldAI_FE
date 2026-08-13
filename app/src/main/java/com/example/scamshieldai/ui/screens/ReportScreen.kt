@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,21 +23,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportScreen(
     onBack: () -> Unit,
     onSubmit: () -> Unit,
-    onSubmitReport: ((type: String, content: String, note: String?) -> Unit)? = null,
+    onSubmitReport: ((String, String, String?, (Boolean, String?) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedCategory by remember { mutableStateOf("") }
     var otherCategoryDetail by remember { mutableStateOf("") }
     var reportDetail by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
-    
+    var isSubmitting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     val categories = listOf(
         "Phishing / Tautan Palsu",
         "Penipuan Hadiah / Uang",
@@ -57,44 +58,11 @@ fun ReportScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header for Report
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 32.dp)
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Laporkan Ancaman",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Bantu komunitas terhindar dari scam",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-        }
+        ScreenTopBar(
+            title = "Laporkan",
+            subtitle = "Kirim temuan untuk ditinjau",
+            onBack = if (isSubmitting) null else onBack
+        )
 
         Column(
             modifier = Modifier
@@ -103,9 +71,9 @@ fun ReportScreen(
                 .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             Text(
-                text = "Bantu kami melindungi komunitas dengan melaporkan temuan penipuan ini.",
+                text = "Isi kategori dan detail temuan. Laporan masuk ke antrean peninjauan.",
                 color = Slate500,
                 fontSize = 15.sp,
                 lineHeight = 22.sp
@@ -120,13 +88,13 @@ fun ReportScreen(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
             categories.forEach { category ->
                 val isSelected = selectedCategory == category
                 val isOther = category == "Lainnya"
-                
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -138,29 +106,37 @@ fun ReportScreen(
                             color = if (isSelected) Cerulean else YaleBlue.copy(alpha = 0.05f),
                             shape = RoundedCornerShape(16.dp)
                         )
-                        .clickable { selectedCategory = category }
+                        .clickable(enabled = !isSubmitting) { selectedCategory = category }
                         .padding(16.dp)
                 ) {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = isSelected,
-                                onClick = { selectedCategory = category },
+                                onClick = { if (!isSubmitting) selectedCategory = category },
+                                enabled = !isSubmitting,
                                 colors = RadioButtonDefaults.colors(selectedColor = Cerulean)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(text = category, color = PrussianBlue, fontSize = 15.sp)
                         }
-                        
+
                         if (isOther && isSelected) {
                             Spacer(modifier = Modifier.height(12.dp))
                             TextField(
                                 value = otherCategoryDetail,
                                 onValueChange = { otherCategoryDetail = it },
+                                enabled = !isSubmitting,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp),
-                                placeholder = { Text("Sebutkan kategori lainnya...", fontSize = 14.sp, color = Slate500.copy(alpha = 0.6f)) },
+                                placeholder = {
+                                    Text(
+                                        "Sebutkan kategori lainnya...",
+                                        fontSize = 14.sp,
+                                        color = Slate500.copy(alpha = 0.6f)
+                                    )
+                                },
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
@@ -185,12 +161,13 @@ fun ReportScreen(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
                 value = reportDetail,
                 onValueChange = { reportDetail = it },
+                enabled = !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
@@ -206,18 +183,27 @@ fun ReportScreen(
                     unfocusedTextColor = PrussianBlue
                 )
             )
-            
+
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = errorMessage!!,
+                    color = DangerRed,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(40.dp))
         }
 
-        // Action Button
         Box(modifier = Modifier.padding(20.dp).navigationBarsPadding()) {
             val isEnabled = if (selectedCategory == "Lainnya") {
-                selectedCategory.isNotEmpty() && otherCategoryDetail.isNotBlank()
+                selectedCategory.isNotEmpty() && otherCategoryDetail.isNotBlank() && !isSubmitting
             } else {
-                selectedCategory.isNotEmpty()
+                selectedCategory.isNotEmpty() && !isSubmitting
             }
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -225,7 +211,12 @@ fun ReportScreen(
                     .clip(RoundedCornerShape(16.dp))
                     .background(
                         if (isEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
-                        else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
+                        else Brush.linearGradient(
+                            listOf(
+                                DeepNavy.copy(alpha = 0.05f),
+                                DeepNavy.copy(alpha = 0.05f)
+                            )
+                        )
                     )
                     .clickable(enabled = isEnabled) {
                         val reportType = when (selectedCategory) {
@@ -236,19 +227,43 @@ fun ReportScreen(
                             "Lainnya" -> "other"
                             else -> "other"
                         }
-                        val content = if (selectedCategory == "Lainnya") otherCategoryDetail else selectedCategory
-                        val note = reportDetail.ifBlank { null }
-                        onSubmitReport?.invoke(reportType, content, note)
-                        isSubmitted = true
+                        val content =
+                            if (selectedCategory == "Lainnya") otherCategoryDetail.trim()
+                            else selectedCategory
+                        val note = reportDetail.trim().ifBlank { null }
+
+                        if (onSubmitReport == null) {
+                            isSubmitted = true
+                            return@clickable
+                        }
+
+                        isSubmitting = true
+                        errorMessage = null
+                        onSubmitReport(reportType, content, note) { success, message ->
+                            isSubmitting = false
+                            if (success) {
+                                isSubmitted = true
+                            } else {
+                                errorMessage = message ?: "Gagal mengirim laporan"
+                            }
+                        }
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Kirim Laporan",
-                    color = if (isEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (isSubmitting) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Kirim Laporan",
+                        color = if (isEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
