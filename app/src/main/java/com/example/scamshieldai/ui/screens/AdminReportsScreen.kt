@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.network.AdminReportItem
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
 @Composable
@@ -31,6 +32,7 @@ fun AdminReportsScreen(
     onBack: () -> Unit,
     onVerify: (String) -> Unit,
     onReject: (String) -> Unit,
+    onRefresh: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedFilter by remember { mutableStateOf("all") }
@@ -58,83 +60,41 @@ fun AdminReportsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 24.dp)
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text("Kelola Laporan", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-                        Text(
-                            "Total ${stats["total"] ?: 0} laporan",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    AdminStatCard(
-                        count = stats["pending"] ?: 0,
-                        label = "Pending",
-                        color = WarningYellow,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedFilter = "pending" }
-                    )
-                    AdminStatCard(
-                        count = stats["verified"] ?: 0,
-                        label = "Verified",
-                        color = SafeGreen,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedFilter = "verified" }
-                    )
-                    AdminStatCard(
-                        count = stats["rejected"] ?: 0,
-                        label = "Rejected",
-                        color = DangerRed,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedFilter = "rejected" }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("all" to "Semua", "pending" to "Pending", "verified" to "Verified", "rejected" to "Rejected").forEach { (key, label) ->
-                        val isSelected = selectedFilter == key
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(if (isSelected) Cerulean else Color.White.copy(alpha = 0.1f))
-                                .clickable { selectedFilter = key }
-                                .padding(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            Text(label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                    }
+        ScreenTopBar(
+            title = "Kelola laporan",
+            subtitle = "Tinjau laporan pengguna",
+            onBack = onBack,
+            actions = {
+                TextButton(onClick = onRefresh, enabled = !isLoading) {
+                    Text("Muat ulang", color = Cerulean, fontSize = 13.sp)
                 }
             }
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            AdminFilterChip(
+                label = "Semua (${stats["total"] ?: 0})",
+                selected = selectedFilter == "all",
+                onClick = { selectedFilter = "all" },
+                modifier = Modifier.weight(1f)
+            )
+            AdminFilterChip(
+                label = "Pending (${stats["pending"] ?: 0})",
+                selected = selectedFilter == "pending",
+                onClick = { selectedFilter = "pending" },
+                modifier = Modifier.weight(1f)
+            )
+            AdminFilterChip(
+                label = "OK (${stats["verified"] ?: 0})",
+                selected = selectedFilter == "verified",
+                onClick = { selectedFilter = "verified" },
+                modifier = Modifier.weight(1f)
+            )
         }
 
         if (isLoading) {
@@ -159,6 +119,30 @@ fun AdminReportsScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun AdminFilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (selected) Cerulean else DeepNavy.copy(alpha = 0.06f))
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = if (selected) Color.White else PrussianBlue,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
