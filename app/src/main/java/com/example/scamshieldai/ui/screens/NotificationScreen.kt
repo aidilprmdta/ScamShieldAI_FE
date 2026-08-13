@@ -269,7 +269,7 @@ fun NotificationScreen(
                     NotificationSettingItem(
                         icon = Icons.Outlined.ErrorOutline,
                         label = "Peringatan Keamanan",
-                        description = "Deteksi ancaman & laporan",
+                        description = "Status laporan dan peringatan",
                         checked = isSecurityAlertsEnabled && isAllNotificationsEnabled,
                         onCheckedChange = {
                             if (isAllNotificationsEnabled) {
