@@ -22,6 +22,7 @@ fun ScamShieldTheme(
 ) {
     MaterialTheme(
         colorScheme = LightColorScheme,
+        typography = ScamShieldTypography,
         content = content
     )
 }
