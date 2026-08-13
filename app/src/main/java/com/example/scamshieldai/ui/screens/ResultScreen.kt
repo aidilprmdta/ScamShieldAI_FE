@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -48,6 +49,7 @@ enum class RiskLevel {
     LOW, MEDIUM, HIGH
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ResultScreen(
     result: ScanResult,
@@ -55,14 +57,16 @@ fun ResultScreen(
     onHistoryClick: () -> Unit,
     onBlockDeleteClick: () -> Unit,
     onReportClick: () -> Unit,
+    onLearnMoreClick: (() -> Unit)? = null,
+    learnMoreTitle: String? = null,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     val riskConfig = remember(result.riskLevel) {
         when (result.riskLevel) {
-            RiskLevel.HIGH -> Triple(DangerRed, "Risiko Tinggi", "⚠️")
-            RiskLevel.MEDIUM -> Triple(WarningYellow, "Risiko Sedang", "🟡")
-            RiskLevel.LOW -> Triple(SafeGreen, "Aman", "✅")
+            RiskLevel.HIGH -> DangerRed to "Risiko Tinggi"
+            RiskLevel.MEDIUM -> WarningYellow to "Risiko Sedang"
+            RiskLevel.LOW -> SafeGreen to "Aman"
         }
     }
 
@@ -80,50 +84,39 @@ fun ResultScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header for Result
-        Box(
+        // Risk-tinted top strip — hasil jadi fokus, bukan hero navy
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
+                .background(riskConfig.first.copy(alpha = 0.12f))
                 .statusBarsPadding()
-                .padding(bottom = 32.dp)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBackToHome,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Hasil Analisis",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Deteksi ancaman bertenaga AI",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                    IconButton(
-                        onClick = onHistoryClick,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.Default.History, contentDescription = "Riwayat", tint = Color.White)
-                    }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackToHome) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = PrussianBlue)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = typeLabel,
+                        color = Slate500,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = riskConfig.second,
+                        color = riskConfig.first,
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                IconButton(onClick = onHistoryClick) {
+                    Icon(Icons.Default.History, contentDescription = "Riwayat", tint = PrussianBlue)
                 }
             }
         }
@@ -137,39 +130,20 @@ fun ResultScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Risk Gauge
-            RiskGauge(score = result.riskScore, color = riskConfig.first)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Risk Badge
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(riskConfig.first.copy(alpha = 0.15f))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(riskConfig.third, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = riskConfig.second,
-                        color = riskConfig.first,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            // Risk Gauge — key agar animasi selalu reset saat analisis baru
+            key(result.inputSummary, result.riskScore, result.type) {
+                RiskGauge(score = result.riskScore, color = riskConfig.first)
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = "$typeLabel · Disimpan di riwayat",
+                text = "Skor ${result.riskScore}",
                 color = Slate500,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 12.dp)
+                fontSize = 13.sp
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Sections
             ResultSection(title = "INPUT YANG DIANALISIS") {
@@ -243,7 +217,7 @@ fun ResultScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.1f))
                 ) {
-                    Text("🚫 Blokir & Hapus", color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Blokir & Hapus", color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
                 Button(
                     onClick = onReportClick,
@@ -251,35 +225,62 @@ fun ResultScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DeepNavy.copy(alpha = 0.05f))
                 ) {
-                    Text("📢 Laporkan", color = PrussianBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Laporkan", color = PrussianBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Learn More Card
-            result.relatedArticle?.let { article ->
+            // Learn More Card — navigasi ke artikel edukasi terkait
+            val articleTitle = learnMoreTitle ?: result.relatedArticle
+            if (!articleTitle.isNullOrBlank()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
                         .background(YaleBlue.copy(alpha = 0.05f))
                         .border(1.dp, YaleBlue.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+                        .then(
+                            if (onLearnMoreClick != null) Modifier.clickable(onClick = onLearnMoreClick)
+                            else Modifier
+                        )
                         .padding(16.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(Cerulean.copy(alpha = 0.1f)),
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Cerulean.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("📖", fontSize = 18.sp)
+                            Icon(
+                                Icons.Default.MenuBook,
+                                contentDescription = null,
+                                tint = Cerulean,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Pelajari lebih lanjut", color = YaleBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Text(article, color = PrussianBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Pelajari lebih lanjut",
+                                color = YaleBlue,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                articleTitle,
+                                color = PrussianBlue,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = YaleBlue)
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "Buka artikel",
+                            tint = YaleBlue
+                        )
                     }
                 }
             }
@@ -313,7 +314,8 @@ fun ResultScreen(
 private fun RiskGauge(score: Int, color: Color) {
     val animatedProgress = remember { Animatable(0f) }
     LaunchedEffect(score) {
-        animatedProgress.animateTo(score / 100f, animationSpec = tween(1200))
+        animatedProgress.snapTo(0f)
+        animatedProgress.animateTo(score / 100f, animationSpec = tween(900))
     }
 
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
@@ -388,7 +390,6 @@ private fun ResultSection(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun ResultHighPreview() {
@@ -401,11 +402,13 @@ private fun ResultHighPreview() {
             flags = listOf("Janji hadiah mencurigakan", "Tekanan waktu/urgensi", "Tautan tidak resmi", "Permintaan tindakan segera"),
             explanation = "Pesan ini mengandung beberapa tanda penipuan klasik: janji hadiah uang dalam jumlah besar, tekanan waktu (urgensi), dan tautan mencurigakan yang meniru domain resmi.",
             recommendation = "Jangan klik tautan apapun. Blokir nomor/akun pengirim. Laporkan ke platform terkait.",
-            relatedArticle = "Waspada Phishing: Kenali Tautan Palsu"
+            relatedArticle = "Phishing"
         ),
         onBackToHome = {},
         onHistoryClick = {},
         onBlockDeleteClick = {},
-        onReportClick = {}
+        onReportClick = {},
+        learnMoreTitle = "Waspada Phishing: Kenali Tautan Palsu",
+        onLearnMoreClick = {}
     )
 }
