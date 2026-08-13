@@ -88,13 +88,14 @@ fun RegisterScreen(
                 .padding(top = 80.dp, start = 32.dp, end = 24.dp)
         ) {
             Text(
-                text = "Hello!",
+                text = "ScamShield",
                 color = Color.White,
-                fontSize = 42.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontFamily = DisplayFontFamily,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Sign up to start your journey",
+                text = "Buat akun untuk menyimpan riwayat",
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -150,7 +151,7 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Sign Up",
+                    text = "Daftar",
                     color = PrussianBlue,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -291,7 +292,7 @@ fun RegisterScreen(
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("Sign Up", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Daftar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 }
 
@@ -351,7 +352,7 @@ fun RegisterScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Continue with Google",
+                                text = "Lanjut dengan Google",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrussianBlue
