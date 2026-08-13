@@ -19,4 +19,10 @@ object AuthValidation {
         } else {
             null
         }
+
+    fun passwordStrengthError(password: String): String? = when {
+        password.isEmpty() -> null
+        password.length < 6 -> "Kata sandi minimal 6 karakter"
+        else -> null
+    }
 }
