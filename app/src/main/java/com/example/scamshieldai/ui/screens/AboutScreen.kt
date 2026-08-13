@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.R
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 import androidx.compose.ui.res.painterResource
 
@@ -39,70 +40,8 @@ fun AboutScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 40.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // App Logo/Icon
-                Surface(
-                    modifier = Modifier.size(100.dp),
-                    color = Color.White.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(28.dp),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logoapp_removebg),
-                            contentDescription = "Logo",
-                            modifier = Modifier.size(72.dp)
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                Text(
-                    text = "ScamShield AI",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(
-                    text = "Versi 2.0.0 (Stable)",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
+        ScreenTopBar(title = "Tentang", onBack = onBack)
+
 
         Column(
             modifier = Modifier
@@ -110,8 +49,30 @@ fun AboutScreen(
                 .verticalScroll(scrollState)
                 .padding(24.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 24.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logoapp_removebg),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(56.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = "ScamShield",
+                        color = PrussianBlue,
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(text = "Versi 1.0.0", color = Slate500, fontSize = 13.sp)
+                }
+            }
+
             Text(
-                text = "MISI KAMI",
+                text = "TENTANG",
                 color = Slate500,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -119,7 +80,7 @@ fun AboutScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = "ScamShield AI hadir untuk memberikan perlindungan cerdas bagi setiap pengguna digital di Indonesia. Dengan memanfaatkan teknologi kecerdasan buatan (AI) tercanggih, kami berkomitmen untuk memberantas ancaman penipuan siber, mulai dari phishing, malware, hingga rekayasa sosial secara real-time.",
+                text = "ScamShield membantu memeriksa chat, tautan, screenshot, dan QR yang mencurigakan sebelum Anda klik atau transfer.",
                 color = PrussianBlue.copy(alpha = 0.8f),
                 fontSize = 15.sp,
                 lineHeight = 24.sp
@@ -128,7 +89,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "FITUR UNGGULAN",
+                text = "YANG BISA DILAKUKAN",
                 color = Slate500,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -138,13 +99,13 @@ fun AboutScreen(
 
             AboutFeatureItem(
                 icon = Icons.Outlined.Shield,
-                title = "Analisis AI 24/7",
-                desc = "Mendeteksi pola penipuan bahasa Indonesia yang kompleks secara otomatis."
+                title = "Analisis teks & tautan",
+                desc = "Menilai risiko pesan atau URL berdasarkan indikator penipuan umum."
             )
             AboutFeatureItem(
                 icon = Icons.Default.Language,
-                title = "Verifikasi Tautan Global",
-                desc = "Terhubung dengan database ancaman global untuk memvalidasi setiap URL."
+                title = "Riwayat & edukasi",
+                desc = "Menyimpan hasil analisis dan materi singkat soal modus penipuan."
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -166,7 +127,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = "© 2026 ScamShield AI Team.\nDibuat dengan ❤️ untuk Indonesia yang lebih aman.",
+                text = "© 2026 ScamShield",
                 color = Slate400,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
