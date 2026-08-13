@@ -12,7 +12,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.R
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
 data class EducationItem(
@@ -78,48 +81,15 @@ fun EducationCenterScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header for Education
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 32.dp)
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Pusat Edukasi",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Literasi digital untuk perlindungan diri",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-        }
+        ScreenTopBar(
+            title = "Edukasi",
+            subtitle = "Artikel dan kuis modus penipuan",
+            onBack = onBack
+        )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 24.dp, bottom = 110.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 110.dp)
         ) {
             // Featured Card
             item {
@@ -211,7 +181,7 @@ private fun FeaturedCard(
                     .background(Cerulean)
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                Text("BACAAN WAJIB", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                Text("Panduan", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -306,7 +276,12 @@ private fun EducationCard(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Text(if (item.type == "KUIS") "📝" else "📄", fontSize = 24.sp)
+                    Icon(
+                        imageVector = if (item.type == "KUIS") Icons.Default.Quiz else Icons.Default.Article,
+                        contentDescription = null,
+                        tint = Cerulean,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
                 
                 if (isCompleted) {
