@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -124,10 +125,8 @@ fun EducationDetailScreen(
                     ProtectionTipsCard(content.tips)
                 }
 
-<<<<<<< HEAD
-=======
                 Spacer(modifier = Modifier.height(40.dp))
-                
+
                 // Done Button (Gradient)
                 Box(
                     modifier = Modifier
@@ -146,7 +145,6 @@ fun EducationDetailScreen(
                     )
                 }
 
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
