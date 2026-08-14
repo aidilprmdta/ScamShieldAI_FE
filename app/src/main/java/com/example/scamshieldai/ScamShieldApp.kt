@@ -37,6 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.scamshieldai.analysis.AnalysisCoordinator
 import com.example.scamshieldai.analysis.mapApiResultToScanResult
+import com.example.scamshieldai.auth.AuthSession
 import com.example.scamshieldai.auth.AuthTokenStore
 import com.example.scamshieldai.model.EducationCatalog
 import com.example.scamshieldai.model.EducationMatcher
@@ -130,10 +131,15 @@ fun ScamShieldApp(
     LaunchedEffect(Unit) {
         val savedToken = AppPreferences.savedTokenFlow(context).first()
         val savedRefresh = AppPreferences.savedRefreshTokenFlow(context).first()
-        if (savedToken != null) {
-            AuthTokenStore.setToken(savedToken, savedRefresh)
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+        if (savedToken != null || savedRefresh != null) {
+            AuthTokenStore.restore(savedToken, savedRefresh)
+            val sessionOk = AuthSession.ensureValidToken()
+            if (sessionOk) {
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
+            } else {
+                AuthTokenStore.clear()
             }
         }
     }
