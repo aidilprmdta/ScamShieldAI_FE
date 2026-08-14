@@ -31,13 +31,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun SecurityPrivacyScreen(
     onBack: () -> Unit,
-<<<<<<< HEAD
-    onChangePasswordClick: () -> Unit,
-=======
     onManagePermissions: () -> Unit = {},
     onChangePassword: (() -> Unit)? = null,
     onAutoCleanEnabled: (() -> Unit)? = null,
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -88,15 +84,9 @@ fun SecurityPrivacyScreen(
                 SecurityNavItem(
                     icon = Icons.Default.Password,
                     label = "Ubah Kata Sandi",
-<<<<<<< HEAD
-                    description = "Perbarui kata sandi Anda",
-                    iconTint = WarningYellow,
-                    onClick = onChangePasswordClick
-=======
                     description = "Ganti kata sandi akun email Anda",
                     iconTint = WarningYellow,
                     onClick = onChangePassword
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                 )
             }
 
@@ -217,20 +207,12 @@ private fun SecurityNavItem(
     label: String,
     description: String,
     iconTint: Color,
-<<<<<<< HEAD
-    onClick: () -> Unit = {}
-=======
     onClick: (() -> Unit)?
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-<<<<<<< HEAD
-            .clickable { onClick() }
-=======
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -265,5 +247,5 @@ private fun SecurityNavItem(
 @Preview(showBackground = true)
 @Composable
 private fun SecurityPrivacyPreview() {
-    SecurityPrivacyScreen(onBack = {}, onChangePasswordClick = {})
+    SecurityPrivacyScreen(onBack = {}, onChangePassword = {})
 }
