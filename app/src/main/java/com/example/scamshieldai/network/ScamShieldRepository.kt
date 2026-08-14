@@ -41,22 +41,6 @@ class ScamShieldRepository {
         }
     }
 
-<<<<<<< HEAD
-    suspend fun changePassword(currentPassword: String, newPassword: String): Result<String> {
-        return try {
-            val token = getAuthToken() ?: return Result.failure(Exception("Belum login"))
-            val response = api.changePassword(
-                ChangePasswordRequest(currentPassword = currentPassword, newPassword = newPassword),
-                token
-            )
-            if (response.isSuccessful && response.body()?.success == true) {
-                Result.success(response.body()!!.message)
-            } else {
-                Result.failure(Exception(response.apiErrorMessage("Gagal mengubah password")))
-            }
-        } catch (e: Exception) {
-            Result.failure(Exception(e.toUserMessage("Gagal mengubah password")))
-=======
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<AuthTokens> {
         return try {
             val token = getAuthToken() ?: return Result.failure(Exception("Belum login"))
@@ -76,13 +60,12 @@ class ScamShieldRepository {
             }
         } catch (e: Exception) {
             Result.failure(Exception(e.toUserMessage("Gagal mengubah kata sandi")))
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
         }
     }
 
     suspend fun login(email: String, password: String): Result<AuthTokens> {
         return try {
-            val response = api.login(AuthLoginRequest(email = email, password = password))
+            val response = api.login(AuthLoginRequest(email = email.trim().lowercase(), password = password))
             if (response.isSuccessful && response.body()?.success == true) {
                 val tokens = response.body()!!.data
                 AuthTokenStore.setToken(tokens.idToken, tokens.refreshToken)
@@ -97,7 +80,7 @@ class ScamShieldRepository {
 
     suspend fun register(email: String, password: String): Result<AuthTokens> {
         return try {
-            val response = api.register(AuthRegisterRequest(email = email, password = password))
+            val response = api.register(AuthRegisterRequest(email = email.trim().lowercase(), password = password))
             if (response.isSuccessful && response.body()?.success == true) {
                 val tokens = response.body()!!.data
                 AuthTokenStore.setToken(tokens.idToken, tokens.refreshToken)
