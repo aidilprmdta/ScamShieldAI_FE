@@ -255,16 +255,3 @@ data class ReportCountResponse(
     val count: Int,
     val message: String? = null
 )
-
-
-// ===== CHANGE PASSWORD =====
-
-data class ChangePasswordRequest(
-    @SerializedName("current_password") val currentPassword: String,
-    @SerializedName("new_password") val newPassword: String
-)
-
-data class ChangePasswordResponse(
-    val success: Boolean,
-    val message: String
-)
