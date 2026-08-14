@@ -29,8 +29,8 @@ class ScamShieldMessagingService : FirebaseMessagingService() {
             if (AuthTokenStore.idToken == null) {
                 val saved = AppPreferences.savedTokenFlow(applicationContext).first()
                 val refresh = AppPreferences.savedRefreshTokenFlow(applicationContext).first()
-                if (saved != null) {
-                    AuthTokenStore.setToken(saved, refresh)
+                if (saved != null || refresh != null) {
+                    AuthTokenStore.restore(saved, refresh)
                 }
             }
             if (AuthTokenStore.idToken != null) {
