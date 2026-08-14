@@ -9,6 +9,7 @@ class AuthTokenStoreTest {
 
     @Before
     fun setup() {
+        AuthTokenStore.persistHandler = null
         AuthTokenStore.clear()
     }
 
@@ -39,5 +40,12 @@ class AuthTokenStoreTest {
     fun `initial state is null`() {
         assertNull(AuthTokenStore.idToken)
         assertNull(AuthTokenStore.refreshToken)
+    }
+
+    @Test
+    fun `restore loads tokens without requiring persist`() {
+        AuthTokenStore.restore("saved_id", "saved_refresh")
+        assertEquals("saved_id", AuthTokenStore.idToken)
+        assertEquals("saved_refresh", AuthTokenStore.refreshToken)
     }
 }
