@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
 data class QuizScenario(
@@ -95,44 +96,11 @@ fun QuizScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header for Quiz
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(PrussianBlue)
-                .statusBarsPadding()
-                .padding(bottom = 32.dp)
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Kuis Interaktif",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Pertanyaan ${currentIndex + 1} dari ${scenarios.size}",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-        }
+        ScreenTopBar(
+            title = "Kuis",
+            subtitle = "Pertanyaan ${currentIndex + 1} dari ${scenarios.size}",
+            onBack = onBack
+        )
 
         LinearProgressIndicator(
             progress = { (currentIndex + 1).toFloat() / scenarios.size },
@@ -305,7 +273,12 @@ private fun QuizResultContent(
                 .border(2.dp, Cerulean.copy(alpha = 0.3f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text("🎉", fontSize = 64.sp)
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = Cerulean,
+                modifier = Modifier.size(64.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -335,8 +308,8 @@ private fun QuizResultContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = if (score == total) "Luar biasa! Anda memiliki kewaspadaan digital yang sangat baik."
-                   else "Bagus! Terus berlatih untuk meningkatkan kewaspadaan Anda.",
+            text = if (score == total) "Semua jawaban benar."
+                   else "Beberapa jawaban masih keliru. Coba ulang bila perlu.",
             color = PrussianBlue.copy(alpha = 0.7f),
             fontSize = 15.sp,
             textAlign = TextAlign.Center,

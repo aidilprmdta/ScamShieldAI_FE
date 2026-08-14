@@ -19,22 +19,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.settings.AppPreferences
 import com.example.scamshieldai.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun SecurityPrivacyScreen(
     onBack: () -> Unit,
+<<<<<<< HEAD
     onChangePasswordClick: () -> Unit,
+=======
+    onManagePermissions: () -> Unit = {},
+    onChangePassword: (() -> Unit)? = null,
+    onAutoCleanEnabled: (() -> Unit)? = null,
+>>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    
-    // Simulation states
-    var isDataSharingEnabled by remember { mutableStateOf(false) }
+
+    val autoCleanEnabled by AppPreferences.autoCleanEnabledFlow(context)
+        .collectAsState(initial = false)
 
     Column(
         modifier = modifier
@@ -42,7 +53,6 @@ fun SecurityPrivacyScreen(
             .background(WhiteBackground)
             .statusBarsPadding()
     ) {
-        // Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -73,40 +83,50 @@ fun SecurityPrivacyScreen(
                 .padding(horizontal = 24.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Account Security Section
+
             SecuritySection(title = "KEAMANAN AKUN") {
                 SecurityNavItem(
                     icon = Icons.Default.Password,
                     label = "Ubah Kata Sandi",
+<<<<<<< HEAD
                     description = "Perbarui kata sandi Anda",
                     iconTint = WarningYellow,
                     onClick = onChangePasswordClick
+=======
+                    description = "Ganti kata sandi akun email Anda",
+                    iconTint = WarningYellow,
+                    onClick = onChangePassword
+>>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Data Section
             SecuritySection(title = "DATA & IZIN") {
                 SecurityNavItem(
-                    icon = Icons.Default.GpsFixed,
+                    icon = Icons.Default.Security,
                     label = "Manajemen Izin",
-                    description = "Akses lokasi, kamera, dan file",
-                    iconTint = Color(0xFFA855F7)
+                    description = "Kamera, notifikasi, dan akses foto",
+                    iconTint = Color(0xFFA855F7),
+                    onClick = onManagePermissions
                 )
                 SecurityToggleItem(
                     icon = Icons.Default.DeleteSweep,
                     label = "Pembersihan Otomatis",
-                    description = "Hapus riwayat deteksi setelah 30 hari",
-                    checked = isDataSharingEnabled,
-                    onCheckedChange = { isDataSharingEnabled = it },
+                    description = "Hapus riwayat deteksi setelah ${AppPreferences.AUTO_CLEAN_DAYS} hari",
+                    checked = autoCleanEnabled,
+                    onCheckedChange = { enabled ->
+                        scope.launch {
+                            AppPreferences.setAutoCleanEnabled(context, enabled)
+                            if (enabled) onAutoCleanEnabled?.invoke()
+                        }
+                    },
                     iconTint = DangerRed
                 )
             }
 
             Spacer(modifier = Modifier.height(40.dp))
-            
+
             Text(
                 text = "ScamShield AI berkomitmen untuk melindungi data pribadi Anda. Semua pemindaian dilakukan secara lokal atau terenkripsi.",
                 color = Slate500,
@@ -170,14 +190,14 @@ private fun SecurityToggleItem(
         ) {
             Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
         }
-        
+
         Spacer(modifier = Modifier.width(16.dp))
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, color = PrussianBlue, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             Text(text = description, color = Slate500, fontSize = 12.sp)
         }
-        
+
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
@@ -197,12 +217,20 @@ private fun SecurityNavItem(
     label: String,
     description: String,
     iconTint: Color,
+<<<<<<< HEAD
     onClick: () -> Unit = {}
+=======
+    onClick: (() -> Unit)?
+>>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+<<<<<<< HEAD
             .clickable { onClick() }
+=======
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+>>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -215,20 +243,22 @@ private fun SecurityNavItem(
         ) {
             Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
         }
-        
+
         Spacer(modifier = Modifier.width(16.dp))
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, color = PrussianBlue, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             Text(text = description, color = Slate500, fontSize = 12.sp)
         }
-        
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = Slate500,
-            modifier = Modifier.size(20.dp)
-        )
+
+        if (onClick != null) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = Slate500,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
 

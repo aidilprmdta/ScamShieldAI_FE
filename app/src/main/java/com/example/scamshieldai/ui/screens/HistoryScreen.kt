@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
 data class HistoryItem(
@@ -75,70 +76,21 @@ fun HistoryScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // New Hero Header for History
-        Box(
+        ScreenTopBar(
+            title = "Riwayat",
+            subtitle = "Hasil analisis sebelumnya",
+            onBack = onBack
+        )
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 32.dp)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Riwayat Deteksi",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Ringkasan ancaman yang diblokir",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(32.dp))
-                
-                // Horizontal Stats
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    StatCardHistory(
-                        count = stats[RiskLevel.HIGH] ?: 0,
-                        label = "Tinggi",
-                        color = DangerRed,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatCardHistory(
-                        count = stats[RiskLevel.MEDIUM] ?: 0,
-                        label = "Sedang",
-                        color = WarningYellow,
-                        modifier = Modifier.weight(1f)
-                    )
-                    StatCardHistory(
-                        count = stats[RiskLevel.LOW] ?: 0,
-                        label = "Aman",
-                        color = SafeGreen,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+            HistoryStatText(stats[RiskLevel.HIGH] ?: 0, "tinggi", DangerRed)
+            HistoryStatText(stats[RiskLevel.MEDIUM] ?: 0, "sedang", WarningYellow)
+            HistoryStatText(stats[RiskLevel.LOW] ?: 0, "aman", SafeGreen)
         }
 
         val pullRefreshState = rememberPullToRefreshState()
@@ -224,6 +176,21 @@ fun HistoryScreen(
                 }
             }
         }
+    }
+}
+
+
+@Composable
+private fun HistoryStatText(count: Int, label: String, color: Color) {
+    Column {
+        Text(
+            text = count.toString(),
+            color = color,
+            fontFamily = DisplayFontFamily,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(text = label, color = Slate500, fontSize = 12.sp)
     }
 }
 

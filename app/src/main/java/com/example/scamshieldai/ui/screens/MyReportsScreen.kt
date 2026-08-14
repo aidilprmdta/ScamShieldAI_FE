@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.network.UserReportItem
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
 @Composable
@@ -28,6 +29,7 @@ fun MyReportsScreen(
     isLoading: Boolean = false,
     onBack: () -> Unit,
     onReportClick: (UserReportItem) -> Unit,
+    onRefresh: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -35,31 +37,12 @@ fun MyReportsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(24.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text("Laporan Saya", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
-                    Text("Pantau status laporan yang Anda kirim", color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp)
-                }
-            }
-        }
+        ScreenTopBar(
+            title = "Laporan saya",
+            subtitle = "Status laporan yang dikirim",
+            onBack = onBack
+        )
+
 
         when {
             isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -92,28 +75,10 @@ fun ReportStatusScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(24.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text("Detail Laporan", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
-            }
-        }
+        ScreenTopBar(
+            title = "Detail laporan",
+            onBack = onBack
+        )
 
         when {
             isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -183,7 +148,16 @@ private fun UserReportCard(report: UserReportItem, onClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).clip(CircleShape).background(statusColor))
                 Spacer(Modifier.width(8.dp))
-                Text(report.verifiedStatus.uppercase(), color = statusColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    when (report.verifiedStatus) {
+                        "verified" -> "DIVERIFIKASI"
+                        "rejected" -> "DITOLAK"
+                        else -> "MENUNGGU"
+                    },
+                    color = statusColor,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(Modifier.weight(1f))
                 Text(report.type.uppercase(), color = Cerulean, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }

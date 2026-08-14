@@ -13,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,7 +30,7 @@ import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun ProfileScreen(
-    userName: String = "Pengguna ScamShield",
+    userName: String = "Pengguna",
     userEmail: String = "",
     scanCount: Int = 0,
     threatCount: Int = 0,
@@ -55,100 +54,65 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Section with Gradient
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(Brush.verticalGradient(listOf(DeepNavy, YaleBlue)))
                 .statusBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Profil",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Enhanced Avatar
-                Box(contentAlignment = Alignment.BottomEnd) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Box(
-                            modifier = Modifier
-                                .size(110.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.1f))
-                                .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(90.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .padding(2.dp)
-                                .clip(CircleShape)
-                                .background(Cerulean.copy(alpha = 0.1f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Cerulean,
-                                modifier = Modifier.size(56.dp)
-                            )
-                        }
-                    }
-                    IconButton(
-                        onClick = onEditProfileClick,
-                        modifier = Modifier
-                            .offset(x = (-4).dp, y = (-4).dp)
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit profil",
-                            tint = YaleBlue,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+            Text(
+                text = "Profil",
+                color = PrussianBlue,
+                fontFamily = DisplayFontFamily,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .background(Cerulean.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Cerulean,
+                        modifier = Modifier.size(40.dp)
+                    )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = userName,
-                        color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        color = PrussianBlue,
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    if (userEmail.isNotBlank()) {
+                        Text(text = userEmail, color = Slate500, fontSize = 13.sp)
+                    }
+                }
+                IconButton(
+                    onClick = onEditProfileClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(DeepNavy.copy(alpha = 0.06f))
+                ) {
                     Icon(
-                        imageVector = Icons.Outlined.Verified,
-                        contentDescription = "Premium",
-                        tint = Cerulean,
-                        modifier = Modifier.size(20.dp)
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit profil",
+                        tint = YaleBlue,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
-                Text(
-                    text = userEmail,
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 14.sp
-                )
             }
         }
+        HorizontalDivider(thickness = 1.dp, color = DeepNavy.copy(alpha = 0.08f))
 
         Column(
             modifier = Modifier

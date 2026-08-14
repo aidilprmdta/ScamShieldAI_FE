@@ -62,11 +62,15 @@ fun HelpCenterScreen(
                 faqs = listOf(
                     HelpFaq(
                         question = "Bagaimana cara membuat akun?",
-                        answer = "Buka halaman Sign Up, masukkan email dan password (minimal 6 karakter), lalu ketuk Sign Up. Anda juga bisa mendaftar cepat dengan tombol Continue with Google."
+                        answer = "Buka halaman Daftar, masukkan email dan password (minimal 6 karakter), lalu ketuk Daftar. Anda juga bisa mendaftar dengan tombol Lanjut dengan Google."
                     ),
                     HelpFaq(
                         question = "Saya lupa password, apa yang harus dilakukan?",
-                        answer = "Saat ini reset password belum tersedia di aplikasi. Gunakan login Google jika akun Anda terhubung ke Google, atau hubungi tim dukungan ScamShield AI untuk bantuan pemulihan akun."
+                        answer = "Jika akun memakai email/password, hubungi dukungan ScamShield untuk bantuan pemulihan. Jika Anda login dengan Google, pulihkan akses lewat akun Google. Setelah masuk, ubah kata sandi lewat Profil → Keamanan & Privasi → Ubah Kata Sandi."
+                    ),
+                    HelpFaq(
+                        question = "Bagaimana cara mengubah kata sandi?",
+                        answer = "Buka Profil → Keamanan & Privasi → Ubah Kata Sandi. Masukkan kata sandi lama dan kata sandi baru (minimal 6 karakter). Fitur ini hanya untuk akun email/password, bukan akun Google-only."
                     ),
                     HelpFaq(
                         question = "Bagaimana cara mengubah nama atau email?",
@@ -169,7 +173,7 @@ fun HelpCenterScreen(
                     ),
                     HelpFaq(
                         question = "Notifikasi tidak muncul?",
-                        answer = "Izinkan notifikasi di pengaturan sistem Android untuk ScamShield AI, lalu aktifkan juga di Profil → Notifikasi. Login ulang agar token FCM terdaftar ulang ke server."
+                        answer = "Izinkan notifikasi di pengaturan sistem Android untuk ScamShield, lalu aktifkan juga di Profil → Notifikasi. Login ulang agar token FCM terdaftar ulang ke server."
                     ),
                     HelpFaq(
                         question = "Siapa yang bisa saya hubungi?",

@@ -28,21 +28,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import kotlinx.coroutines.launch
 
 @Composable
 fun ScanScreenshotScreen(
     onBack: () -> Unit,
     onAnalyzeText: (String) -> Unit,
-    onDemoSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var isProcessing by remember { mutableStateOf(false) }
 
@@ -74,44 +72,11 @@ fun ScanScreenshotScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header for Scan Screenshot
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 32.dp)
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Scan Screenshot",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "OCR on-device — aman & privat",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-        }
+        ScreenTopBar(
+            title = "Screenshot",
+            subtitle = "Ambil teks dari gambar chat",
+            onBack = onBack
+        )
 
         Column(
             modifier = Modifier
@@ -139,7 +104,7 @@ fun ScanScreenshotScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Privasi terjaga: Teks diekstrak langsung di perangkat Anda (OCR on-device). Gambar asli tidak pernah dikirim ke server.",
+                    text = "Teks diekstrak di perangkat ini. Gambar tidak dikirim ke server.",
                     color = Cerulean,
                     fontSize = 13.sp,
                     lineHeight = 20.sp
@@ -213,37 +178,6 @@ fun ScanScreenshotScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Separator
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = DeepNavy.copy(alpha = 0.05f))
-                Text(
-                    "atau",
-                    color = Slate500,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = DeepNavy.copy(alpha = 0.05f))
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Demo Button
-            OutlinedButton(
-                onClick = onDemoSelected,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrussianBlue),
-                border = BorderStroke(1.dp, DeepNavy.copy(alpha = 0.1f))
-            ) {
-                Text("Coba dengan Screenshot Demo", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-            }
         }
     }
 }
@@ -251,5 +185,5 @@ fun ScanScreenshotScreen(
 @Preview(showBackground = true)
 @Composable
 private fun ScanScreenshotPreview() {
-    ScanScreenshotScreen(onBack = {}, onAnalyzeText = {}, onDemoSelected = {})
+    ScanScreenshotScreen(onBack = {}, onAnalyzeText = {})
 }

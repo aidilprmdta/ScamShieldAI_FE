@@ -124,6 +124,29 @@ fun EducationDetailScreen(
                     ProtectionTipsCard(content.tips)
                 }
 
+<<<<<<< HEAD
+=======
+                Spacer(modifier = Modifier.height(40.dp))
+                
+                // Done Button (Gradient)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
+                        .clickable { onBack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Selesai membaca",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+>>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                 Spacer(modifier = Modifier.height(48.dp))
             }
         }
@@ -141,16 +164,12 @@ private fun ProtectionTipsCard(tips: List<String>) {
             .padding(24.dp)
     ) {
         Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("💡", fontSize = 18.sp)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Tips Perlindungan",
-                    color = PrussianBlue,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text(
+                "Tips perlindungan",
+                color = PrussianBlue,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
             
             Spacer(modifier = Modifier.height(20.dp))
             

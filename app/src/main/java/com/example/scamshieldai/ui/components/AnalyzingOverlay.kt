@@ -12,8 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
@@ -24,22 +22,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun AnalyzingOverlay(
-    onAnalysisComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Security UX: Block back gesture
+    // Security UX: Block back gesture while analysis is in flight
     BackHandler { /* Do nothing - process is crucial */ }
-
-    // Simulation logic
-    LaunchedEffect(Unit) {
-        delay(4000)
-        onAnalysisComplete()
-    }
 
     Box(
         modifier = modifier
@@ -54,32 +44,28 @@ fun AnalyzingOverlay(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(horizontal = 32.dp)
         ) {
-            // Animated Icon Section
             Box(
                 modifier = Modifier
                     .size(96.dp)
                     .padding(bottom = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Pulsing Rings
                 PulsingRing(delayMillis = 0)
                 PulsingRing(delayMillis = 300)
 
-                // Central Circle with Spinning Icon
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(4.dp)
                         .clip(CircleShape)
                         .background(Cerulean.copy(alpha = 0.1f))
-                        .semantics { contentDescription = "AI Analyzing Icon" },
+                        .semantics { contentDescription = "Indikator analisis" },
                     contentAlignment = Alignment.Center
                 ) {
                     SpinningIcon()
                 }
             }
 
-            // Text Section
             Text(
                 text = "Menganalisis...",
                 color = PrussianBlue,
@@ -89,14 +75,13 @@ fun AnalyzingOverlay(
             )
 
             Text(
-                text = "AI sedang memeriksa indikator penipuan.\nHarap tunggu sebentar.",
+                text = "Memeriksa indikator penipuan.\nHarap tunggu sebentar.",
                 color = Slate500,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 20.sp
             )
 
-            // Bouncing Dots
             Row(
                 modifier = Modifier.padding(top = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -153,7 +138,6 @@ private fun SpinningIcon() {
             .size(40.dp)
             .rotate(rotation)
     ) {
-        // Base circle (25% opacity)
         drawCircle(
             color = Cerulean,
             radius = size.minDimension / 2,
@@ -161,7 +145,6 @@ private fun SpinningIcon() {
             alpha = 0.25f
         )
 
-        // Progress arc (75% opacity)
         drawArc(
             color = Cerulean,
             startAngle = -90f,
@@ -198,5 +181,5 @@ private fun BouncingDot(delayMillis: Int) {
 @Preview(showBackground = true)
 @Composable
 private fun AnalyzingOverlayPreview() {
-    AnalyzingOverlay(onAnalysisComplete = {})
+    AnalyzingOverlay()
 }

@@ -159,6 +159,17 @@ data class UpdateProfileResponse(
     val message: String? = null
 )
 
+data class ChangePasswordRequest(
+    @SerializedName("current_password") val currentPassword: String,
+    @SerializedName("new_password") val newPassword: String
+)
+
+data class ChangePasswordResponse(
+    val success: Boolean,
+    val data: AuthTokens,
+    val message: String? = null
+)
+
 // ===== ADMIN =====
 
 data class AdminReportItem(

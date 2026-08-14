@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.scamshieldai.ui.components.ScreenTopBar
 import com.example.scamshieldai.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,44 +60,11 @@ fun CheckLinkScreen(
             .fillMaxSize()
             .background(WhiteBackground)
     ) {
-        // Hero Header for Check Link
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .background(YaleBlue)
-                .statusBarsPadding()
-                .padding(bottom = 32.dp)
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f))
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Cek Tautan",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Verifikasi keamanan URL sebelum diklik",
-                            color = Color.White.copy(alpha = 0.6f),
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-        }
+        ScreenTopBar(
+            title = "Cek tautan",
+            subtitle = "Tempel URL sebelum diklik",
+            onBack = onBack
+        )
 
         Column(
             modifier = Modifier
@@ -104,33 +72,7 @@ fun CheckLinkScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 20.dp)
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-            // Info Box (Yale Blue)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(YaleBlue.copy(alpha = 0.05f))
-                    .border(1.dp, YaleBlue.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
-                    .padding(16.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    tint = YaleBlue,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Tempel tautan (URL) yang Anda terima sebelum mengkliknya. AI akan mengecek reputasi domain, pola phishing, dan keamanannya.",
-                    color = YaleBlue,
-                    fontSize = 13.sp,
-                    lineHeight = 20.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // URL Input Row
             Row(
@@ -260,32 +202,22 @@ fun CheckLinkScreen(
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        // Bottom Button
-        Box(
+        val isEnabled = urlText.isNotBlank()
+        Button(
+            onClick = { onCheck(urlText) },
+            enabled = isEnabled,
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(20.dp)
                 .navigationBarsPadding()
+                .height(52.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Cerulean,
+                disabledContainerColor = DeepNavy.copy(alpha = 0.08f)
+            )
         ) {
-            val isEnabled = urlText.isNotBlank()
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
-                        else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
-                    )
-                    .clickable(enabled = isEnabled) { onCheck(urlText) },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Periksa Keamanan Tautan",
-                    color = if (isEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Text("Periksa tautan", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }

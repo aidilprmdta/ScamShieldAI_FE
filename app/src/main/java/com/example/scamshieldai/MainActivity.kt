@@ -9,41 +9,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.scamshieldai.auth.AuthTokenStore
-import com.example.scamshieldai.model.EducationContent
-import com.example.scamshieldai.network.ScamShieldRepository
-import com.example.scamshieldai.settings.AppPreferences
-import com.example.scamshieldai.ui.components.AnalyzingOverlay
-import com.example.scamshieldai.ui.components.FloatingNavBar
-import com.example.scamshieldai.ui.components.NavigationItemData
-import com.example.scamshieldai.ui.screens.*
-import com.example.scamshieldai.ui.theme.*
-import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import com.example.scamshieldai.ui.theme.ScamShieldTheme
 
 class MainActivity : ComponentActivity() {
     private val pendingNotificationRoute = mutableStateOf<String?>(null)
@@ -96,6 +64,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+<<<<<<< HEAD
 
 private enum class AuthGate {
     SignedOut,
@@ -1098,3 +1067,5 @@ fun ScamShieldApp(
         }
     }
 }
+=======
+>>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
