@@ -33,11 +33,7 @@ fun AdminReportsScreen(
     onBack: () -> Unit,
     onVerify: (String) -> Unit,
     onReject: (String) -> Unit,
-<<<<<<< HEAD
-    onRefresh: (() -> Unit)? = null,
-=======
     onRefresh: () -> Unit = {},
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
     modifier: Modifier = Modifier
 ) {
     var selectedFilter by remember { mutableStateOf("all") }
