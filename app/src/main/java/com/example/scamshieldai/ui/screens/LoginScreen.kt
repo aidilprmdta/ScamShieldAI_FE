@@ -69,6 +69,7 @@ fun LoginScreen(
         modifier = modifier
             .fillMaxSize()
             .background(YaleBlue)
+            .navigationBarsPadding()
     ) {
         Canvas(modifier = Modifier.size(200.dp).offset(x = (-50).dp, y = (-50).dp)) {
             drawCircle(
@@ -80,16 +81,17 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 60.dp, start = 32.dp, end = 24.dp)
+                .statusBarsPadding()
+                .padding(top = 24.dp, start = 32.dp, end = 24.dp)
         ) {
             Text(
-                text = "Hello!",
+                text = "Halo!",
                 color = Color.White,
                 fontSize = 42.sp,
                 fontWeight = FontWeight.ExtraBold
             )
             Text(
-                text = "Welcome back to ScamShield AI",
+                text = "Selamat datang kembali di ScamShield AI",
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -117,12 +119,13 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Login",
+                    text = "Masuk",
                     color = PrussianBlue,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -184,7 +187,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Forgot Password?",
+                    text = "Lupa password?",
                     color = Slate500,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
@@ -234,16 +237,16 @@ fun LoginScreen(
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("Login", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Masuk", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Don't have an account? ", color = Slate500, fontSize = 14.sp)
+                    Text("Belum punya akun? ", color = Slate500, fontSize = 14.sp)
                     Text(
-                        text = "Sign Up",
+                        text = "Daftar",
                         color = Cerulean,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
@@ -259,7 +262,7 @@ fun LoginScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = Slate100)
                     Text(
-                        "Or login with",
+                        "Atau masuk dengan",
                         color = Slate400,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -307,7 +310,7 @@ fun LoginScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Continue with Google",
+                                text = "Lanjutkan dengan Google",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrussianBlue

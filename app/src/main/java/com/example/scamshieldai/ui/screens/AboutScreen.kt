@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
@@ -150,18 +149,8 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Links Section
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = CardWhite,
-                shape = RoundedCornerShape(24.dp),
-                border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
-            ) {
-                Column {
-                    LinkItem(label = "Kunjungi Website Resmi", icon = Icons.Default.Language)
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), thickness = 0.5.dp, color = Slate100)
-                    LinkItem(label = "Kebijakan Privasi", icon = Icons.Outlined.Shield)
-                }
-            }
+            // Section removed as requested
+
 
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -205,25 +194,6 @@ private fun AboutFeatureItem(
             Text(text = title, color = PrussianBlue, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text(text = desc, color = Slate500, fontSize = 13.sp, lineHeight = 20.sp)
         }
-    }
-}
-
-@Composable
-private fun LinkItem(
-    label: String,
-    icon: ImageVector
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { }
-            .padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, contentDescription = null, tint = YaleBlue, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = label, color = PrussianBlue, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Slate400)
     }
 }
 

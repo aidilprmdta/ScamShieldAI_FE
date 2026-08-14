@@ -97,6 +97,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private enum class AuthGate {
+    SignedOut,
+    SignedIn
+}
+
 @Composable
 fun ScamShieldApp(
     pendingNotificationRoute: String? = null,
@@ -107,11 +112,12 @@ fun ScamShieldApp(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val token = AuthTokenStore.idToken
+    var authGate by remember { mutableStateOf(AuthGate.SignedOut) }
+    var showRegister by remember { mutableStateOf(false) }
     
     val snackbarHostState = remember { SnackbarHostState() }
     var lastResult by remember { mutableStateOf<ScanResult?>(null) }
     var isAnalyzing by remember { mutableStateOf(false) }
-    var completedEducationIds by remember { mutableStateOf(setOf<String>()) }
     val historyList = remember { mutableStateListOf<HistoryItem>() }
     var isHistoryLoading by remember { mutableStateOf(false) }
     var historyError by remember { mutableStateOf<String?>(null) }
@@ -135,14 +141,32 @@ fun ScamShieldApp(
     }
 
     LaunchedEffect(Unit) {
-        val savedToken = AppPreferences.savedTokenFlow(context).first()
-        val savedRefresh = AppPreferences.savedRefreshTokenFlow(context).first()
-        if (savedToken != null) {
-            AuthTokenStore.setToken(savedToken, savedRefresh)
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+        try {
+            val savedToken = AppPreferences.savedTokenFlow(context).first()
+            val savedRefresh = AppPreferences.savedRefreshTokenFlow(context).first()
+            if (!savedToken.isNullOrBlank()) {
+                AuthTokenStore.setToken(savedToken, savedRefresh)
+                authGate = AuthGate.SignedIn
+            } else {
+                AuthTokenStore.clear()
+                authGate = AuthGate.SignedOut
             }
+        } catch (_: Exception) {
+            AuthTokenStore.clear()
+            authGate = AuthGate.SignedOut
         }
+    }
+
+    fun onAuthSuccess() {
+        coroutineScope.launch {
+            AppPreferences.setSavedToken(
+                context,
+                AuthTokenStore.idToken,
+                AuthTokenStore.refreshToken
+            )
+        }
+        showRegister = false
+        authGate = AuthGate.SignedIn
     }
 
     fun mapApiResultToScanResult(result: com.example.scamshieldai.network.AnalysisResult): ScanResult {
@@ -231,8 +255,8 @@ fun ScamShieldApp(
     }
 
     LaunchedEffect(token) {
-        fetchHistory()
         if (token != null) {
+            fetchHistory()
             repository.getMe().onSuccess { me ->
                 userEmail = me.email ?: ""
                 userDisplayName = me.displayName?.takeIf { it.isNotBlank() }
@@ -259,10 +283,14 @@ fun ScamShieldApp(
             pendingMyReportsCount = 0
             pendingAdminReportsCount = 0
             notificationList.clear()
+            if (authGate == AuthGate.SignedIn) {
+                authGate = AuthGate.SignedOut
+            }
         }
     }
 
-    LaunchedEffect(pendingNotificationRoute, token, isAdmin) {
+    LaunchedEffect(pendingNotificationRoute, token, isAdmin, authGate) {
+        if (authGate != AuthGate.SignedIn) return@LaunchedEffect
         val route = pendingNotificationRoute ?: return@LaunchedEffect
         when {
             route.startsWith("report_status/") -> {
@@ -515,69 +543,57 @@ fun ScamShieldApp(
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val currentRoute = currentDestination?.route ?: "home"
+    val currentRoute = currentDestination?.route
 
     // Logic for highlighting the correct tab even in sub-pages
     val selectedRoute = when {
-        currentRoute.startsWith("education_detail") -> "education_center"
-        else -> currentRoute
+        currentRoute?.startsWith("education_detail") == true -> "education_center"
+        else -> currentRoute ?: "home"
     }
 
     // Logic for showing Navbar: Hide on scanning, result, and auth screens
     val hideNavBarRoutes = listOf(
-        "login", "register",
-        "scan_chat", "check_link", "scan_screenshot", "scan_qr", 
+        "scan_chat", "check_link", "scan_screenshot", "scan_qr",
         "analyzing", "result", "block_delete", "report", "quiz_screen",
         "education_detail", "security_privacy", "notifications", "about",
         "admin_reports", "my_reports", "report_status", "edit_profile", "help_center"
     )
-    val showNavBar = !hideNavBarRoutes.any { currentRoute.startsWith(it) }
+    val showNavBar = authGate == AuthGate.SignedIn && currentRoute != null &&
+        !hideNavBarRoutes.any { currentRoute.startsWith(it) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)) {
-            NavHost(
-                navController = navController,
-                startDestination = "login",
-                modifier = Modifier.fillMaxSize()
-            ) {
-                composable("login") {
-                    val loginContext = LocalContext.current
-                    LoginScreen(
-                        onLoginSuccess = {
-                            coroutineScope.launch {
-                                AppPreferences.setSavedToken(loginContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
-                            }
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        },
-                        onNavigateToRegister = {
-                            navController.navigate("register")
-                        }
-                    )
-                }
-                composable("register") {
-                    val regContext = LocalContext.current
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (authGate == AuthGate.SignedIn) Modifier.padding(paddingValues)
+                    else Modifier
+                )
+        ) {
+            if (authGate != AuthGate.SignedIn) {
+                if (showRegister) {
                     RegisterScreen(
-                        onRegisterSuccess = {
-                            coroutineScope.launch {
-                                AppPreferences.setSavedToken(regContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
-                            }
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        },
-                        onNavigateToLogin = {
-                            navController.popBackStack()
-                        }
+                        modifier = Modifier.fillMaxSize(),
+                        onRegisterSuccess = { onAuthSuccess() },
+                        onNavigateToLogin = { showRegister = false }
+                    )
+                } else {
+                    LoginScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        onLoginSuccess = { onAuthSuccess() },
+                        onNavigateToRegister = { showRegister = true }
                     )
                 }
+            } else {
+                NavHost(
+                    navController = navController,
+                    startDestination = "home",
+                    modifier = Modifier.fillMaxSize()
+                ) {
                 composable("home") {
                     val threatCount = remember(historyList) {
                         historyList.count { it.result.riskLevel == RiskLevel.HIGH }
@@ -703,14 +719,12 @@ fun ScamShieldApp(
                     EducationDetailScreen(
                         content = content,
                         onBack = {
-                            id?.let { completedEducationIds = completedEducationIds + it }
                             navController.popBackStack()
                         }
                     )
                 }
                 composable("education_center") {
                     EducationCenterScreen(
-                        completedIds = completedEducationIds,
                         onBack = { navController.popBackStack() },
                         onItemClick = { item ->
                             if (item.type == "KUIS") {
@@ -725,7 +739,6 @@ fun ScamShieldApp(
                     QuizScreen(
                         onBack = { navController.popBackStack() },
                         onFinish = {
-                            completedEducationIds = completedEducationIds + "4" // ID for Quiz
                             navController.popBackStack()
                         }
                     )
@@ -798,10 +811,9 @@ fun ScamShieldApp(
                         onLogout = {
                             AuthTokenStore.clear()
                             historyList.clear()
+                            showRegister = false
                             coroutineScope.launch { AppPreferences.setSavedToken(context, null) }
-                            navController.navigate("login") {
-                                popUpTo(0) { inclusive = true }
-                            }
+                            authGate = AuthGate.SignedOut
                         }
                     )
                 }
@@ -871,10 +883,34 @@ fun ScamShieldApp(
                             showError("Akses ditolak: hanya admin yang bisa mengelola laporan.")
                         }
                     } else {
+                        LaunchedEffect(Unit) {
+                            if (adminReports.isEmpty() && !isAdminLoading) {
+                                isAdminLoading = true
+                                repository.getAdminReports().onSuccess { list ->
+                                    adminReports.clear()
+                                    adminReports.addAll(list)
+                                }.onFailure { e ->
+                                    showError("Gagal memuat laporan: ${e.message}")
+                                }
+                                isAdminLoading = false
+                            }
+                        }
                         AdminReportsScreen(
                             reports = adminReports,
                             isLoading = isAdminLoading,
                             onBack = { navController.popBackStack() },
+                            onRefresh = {
+                                coroutineScope.launch {
+                                    isAdminLoading = true
+                                    repository.getAdminReports().onSuccess { list ->
+                                        adminReports.clear()
+                                        adminReports.addAll(list)
+                                    }.onFailure { e ->
+                                        showError("Gagal memuat laporan: ${e.message}")
+                                    }
+                                    isAdminLoading = false
+                                }
+                            },
                             onVerify = { reportId ->
                                 coroutineScope.launch {
                                     repository.updateReportStatus(reportId, "verified").onSuccess { result ->
@@ -910,7 +946,34 @@ fun ScamShieldApp(
                 }
                 composable("security_privacy") {
                     SecurityPrivacyScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onChangePasswordClick = { navController.navigate("change_password") }
+                    )
+                }
+                composable("change_password") {
+                    var isChanging by remember { mutableStateOf(false) }
+                    var changeError by remember { mutableStateOf<String?>(null) }
+                    
+                    ChangePasswordScreen(
+                        onBack = { navController.popBackStack() },
+                        onChangePassword = { currentPassword, newPassword ->
+                            isChanging = true
+                            changeError = null
+                            coroutineScope.launch {
+                                repository.changePassword(currentPassword, newPassword)
+                                    .onSuccess { message ->
+                                        isChanging = false
+                                        showError(message) // Show success message
+                                        navController.popBackStack()
+                                    }
+                                    .onFailure { e ->
+                                        isChanging = false
+                                        changeError = e.message
+                                    }
+                            }
+                        },
+                        isLoading = isChanging,
+                        errorMessage = changeError
                     )
                 }
                 composable("notifications") {
@@ -1011,6 +1074,7 @@ fun ScamShieldApp(
                             navController.navigate("report")
                         }
                     )
+                }
                 }
             }
 

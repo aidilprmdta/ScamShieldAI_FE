@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ fun AdminReportsScreen(
     onBack: () -> Unit,
     onVerify: (String) -> Unit,
     onReject: (String) -> Unit,
+    onRefresh: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedFilter by remember { mutableStateOf("all") }
@@ -137,25 +139,54 @@ fun AdminReportsScreen(
             }
         }
 
-        if (isLoading) {
+        if (isLoading && reports.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Cerulean)
             }
         } else if (filteredReports.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.TopCenter) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 80.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
                 Text("Tidak ada laporan", color = Slate500, fontSize = 16.sp)
             }
         } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(filteredReports) { report ->
-                    AdminReportCard(
-                        report = report,
-                        onVerify = { onVerify(report.reportId) },
-                        onReject = { onReject(report.reportId) }
-                    )
+            Box(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(filteredReports) { report ->
+                        AdminReportCard(
+                            report = report,
+                            onVerify = { onVerify(report.reportId) },
+                            onReject = { onReject(report.reportId) }
+                        )
+                    }
+                }
+                
+                // Floating Action Button untuk refresh
+                if (onRefresh != null) {
+                    FloatingActionButton(
+                        onClick = { onRefresh() },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp),
+                        containerColor = Cerulean,
+                        contentColor = Color.White
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        }
+                    }
                 }
             }
         }

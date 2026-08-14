@@ -74,6 +74,7 @@ fun RegisterScreen(
         modifier = modifier
             .fillMaxSize()
             .background(YaleBlue)
+            .navigationBarsPadding()
     ) {
         Canvas(modifier = Modifier.size(200.dp).offset(x = 250.dp, y = (-50).dp)) {
             drawCircle(
@@ -85,16 +86,17 @@ fun RegisterScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 80.dp, start = 32.dp, end = 24.dp)
+                .statusBarsPadding()
+                .padding(top = 24.dp, start = 32.dp, end = 24.dp)
         ) {
             Text(
-                text = "Hello!",
+                text = "Halo!",
                 color = Color.White,
                 fontSize = 42.sp,
                 fontWeight = FontWeight.ExtraBold
             )
             Text(
-                text = "Sign up to start your journey",
+                text = "Daftar untuk mulai melindungi diri Anda",
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -122,8 +124,9 @@ fun RegisterScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(32.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
@@ -134,13 +137,13 @@ fun RegisterScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
+                        contentDescription = "Kembali",
                         tint = Slate400,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Back to login",
+                        text = "Kembali ke login",
                         color = Slate400,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
@@ -150,7 +153,7 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Sign Up",
+                    text = "Daftar",
                     color = PrussianBlue,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -222,7 +225,7 @@ fun RegisterScreen(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Confirm Password") },
+                    label = { Text("Konfirmasi Password") },
                     leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = Slate400) },
                     trailingIcon = {
                         IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
@@ -291,8 +294,21 @@ fun RegisterScreen(
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("Sign Up", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Daftar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Sudah punya akun? ", color = Slate500, fontSize = 14.sp)
+                    Text(
+                        text = "Masuk",
+                        color = Cerulean,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onNavigateToLogin() }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -303,7 +319,7 @@ fun RegisterScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = Slate100)
                     Text(
-                        "Or sign up with",
+                        "Atau daftar dengan",
                         color = Slate400,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -351,7 +367,7 @@ fun RegisterScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Continue with Google",
+                                text = "Lanjutkan dengan Google",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrussianBlue

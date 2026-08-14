@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,7 +40,6 @@ data class EducationItem(
 
 @Composable
 fun EducationCenterScreen(
-    completedIds: Set<String>,
     onBack: () -> Unit,
     onItemClick: (EducationItem) -> Unit,
     modifier: Modifier = Modifier
@@ -124,7 +122,6 @@ fun EducationCenterScreen(
             // Featured Card
             item {
                 FeaturedCard(
-                    isCompleted = completedIds.contains(allItems[0].id),
                     onClick = { onItemClick(allItems[0]) }
                 )
             }
@@ -141,7 +138,6 @@ fun EducationCenterScreen(
             items(filteredItems) { item ->
                 EducationCard(
                     item = item,
-                    isCompleted = completedIds.contains(item.id),
                     onClick = { onItemClick(item) },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 )
@@ -152,7 +148,6 @@ fun EducationCenterScreen(
 
 @Composable
 private fun FeaturedCard(
-    isCompleted: Boolean,
     onClick: () -> Unit
 ) {
     Box(
@@ -187,18 +182,6 @@ private fun FeaturedCard(
                     )
                 )
         )
-        
-        if (isCompleted) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Selesai",
-                tint = SafeGreen,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .size(28.dp)
-            )
-        }
 
         Column(
             modifier = Modifier
@@ -277,7 +260,6 @@ private fun FilterChip(
 @Composable
 private fun EducationCard(
     item: EducationItem,
-    isCompleted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -307,22 +289,6 @@ private fun EducationCard(
                     )
                 } else {
                     Text(if (item.type == "KUIS") "📝" else "📄", fontSize = 24.sp)
-                }
-                
-                if (isCompleted) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
                 }
             }
 
@@ -363,15 +329,6 @@ private fun EducationCard(
                     fontWeight = FontWeight.Bold
                 )
             }
-            
-            if (isCompleted) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Selesai",
-                    tint = SafeGreen,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
         }
     }
 }
@@ -379,5 +336,5 @@ private fun EducationCard(
 @Preview(showBackground = true)
 @Composable
 private fun EducationCenterPreview() {
-    EducationCenterScreen(completedIds = setOf("1"), onBack = {}, onItemClick = {})
+    EducationCenterScreen(onBack = {}, onItemClick = {})
 }

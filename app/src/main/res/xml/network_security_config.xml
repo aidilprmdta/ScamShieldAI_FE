@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-<<<<<<< HEAD
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">10.12.69.218</domain>
         <domain includeSubdomains="true">10.95.17.218</domain>
+        <domain includeSubdomains="true">192.168.110.163</domain>
         <domain includeSubdomains="true">localhost</domain>
     </domain-config>
-=======
     <!-- Release: hanya HTTPS (BASE_URL production pakai https://) -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
     </base-config>
->>>>>>> 278ad9e516c2d5aec63d368e0b27594f1e9351b7
 </network-security-config>

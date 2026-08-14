@@ -1,0 +1,5 @@
+- `[x]` Implementasi Hero Header dan dekorasi Canvas di `ChangePasswordScreen.kt`
+- `[x]` Penyesuaian skema warna `YaleBlue` dan `Slate` pada input field
+- `[x]` Penambahan animasi warna pada tombol "Ubah Kata Sandi"
+- `[x]` Integrasi `SnackbarHost` dan `imePadding` untuk kenyamanan pengguna
+- `[x]` Verifikasi build aplikasi

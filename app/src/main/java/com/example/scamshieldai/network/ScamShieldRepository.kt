@@ -41,6 +41,23 @@ class ScamShieldRepository {
         }
     }
 
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<String> {
+        return try {
+            val token = getAuthToken() ?: return Result.failure(Exception("Belum login"))
+            val response = api.changePassword(
+                ChangePasswordRequest(currentPassword = currentPassword, newPassword = newPassword),
+                token
+            )
+            if (response.isSuccessful && response.body()?.success == true) {
+                Result.success(response.body()!!.message)
+            } else {
+                Result.failure(Exception(response.apiErrorMessage("Gagal mengubah password")))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage("Gagal mengubah password")))
+        }
+    }
+
     suspend fun login(email: String, password: String): Result<AuthTokens> {
         return try {
             val response = api.login(AuthLoginRequest(email = email, password = password))

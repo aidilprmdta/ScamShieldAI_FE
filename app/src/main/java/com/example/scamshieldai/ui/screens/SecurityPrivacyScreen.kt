@@ -28,6 +28,7 @@ import com.example.scamshieldai.ui.theme.*
 @Composable
 fun SecurityPrivacyScreen(
     onBack: () -> Unit,
+    onChangePasswordClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -78,8 +79,9 @@ fun SecurityPrivacyScreen(
                 SecurityNavItem(
                     icon = Icons.Default.Password,
                     label = "Ubah Kata Sandi",
-                    description = "Terakhir diubah 3 bulan lalu",
-                    iconTint = WarningYellow
+                    description = "Perbarui kata sandi Anda",
+                    iconTint = WarningYellow,
+                    onClick = onChangePasswordClick
                 )
             }
 
@@ -194,12 +196,13 @@ private fun SecurityNavItem(
     icon: ImageVector,
     label: String,
     description: String,
-    iconTint: Color
+    iconTint: Color,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -232,5 +235,5 @@ private fun SecurityNavItem(
 @Preview(showBackground = true)
 @Composable
 private fun SecurityPrivacyPreview() {
-    SecurityPrivacyScreen(onBack = {})
+    SecurityPrivacyScreen(onBack = {}, onChangePasswordClick = {})
 }
