@@ -90,22 +90,14 @@ fun RegisterScreen(
                 .padding(top = 24.dp, start = 32.dp, end = 24.dp)
         ) {
             Text(
-<<<<<<< HEAD
-                text = "Halo!",
-=======
                 text = "ScamShield",
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                 color = Color.White,
                 fontFamily = DisplayFontFamily,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
-<<<<<<< HEAD
-                text = "Daftar untuk mulai melindungi diri Anda",
-=======
                 text = "Buat akun untuk menyimpan riwayat",
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -376,11 +368,7 @@ fun RegisterScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-<<<<<<< HEAD
-                                text = "Lanjutkan dengan Google",
-=======
                                 text = "Lanjut dengan Google",
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrussianBlue
