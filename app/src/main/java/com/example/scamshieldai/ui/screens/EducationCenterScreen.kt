@@ -12,12 +12,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-<<<<<<< HEAD
-=======
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Quiz
->>>>>>> dc5197f460afaf389538d47847d860f9e8cc625d
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,7 +46,8 @@ data class EducationItem(
 fun EducationCenterScreen(
     onBack: () -> Unit,
     onItemClick: (EducationItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    completedIds: Set<String> = emptySet()
 ) {
     var selectedCategory by remember { mutableStateOf("Semua") }
 
@@ -112,6 +110,7 @@ fun EducationCenterScreen(
             items(filteredItems) { item ->
                 EducationCard(
                     item = item,
+                    isCompleted = completedIds.contains(item.id),
                     onClick = { onItemClick(item) },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                 )
@@ -235,7 +234,8 @@ private fun FilterChip(
 private fun EducationCard(
     item: EducationItem,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isCompleted: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -285,6 +285,16 @@ private fun EducationCard(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(item.duration, color = Slate500, fontSize = 11.sp)
+                    
+                    if (isCompleted) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Selesai",
+                            tint = SafeGreen,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))
