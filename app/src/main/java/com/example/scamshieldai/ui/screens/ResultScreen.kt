@@ -2,10 +2,7 @@ package com.example.scamshieldai.ui.screens
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -62,6 +60,8 @@ fun ResultScreen(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    var showBlockDialog by remember { mutableStateOf(false) }
+
     val riskConfig = remember(result.riskLevel) {
         when (result.riskLevel) {
             RiskLevel.HIGH -> DangerRed to "Risiko Tinggi"
@@ -70,242 +70,319 @@ fun ResultScreen(
         }
     }
 
-    // Label tipe untuk sub-judul
     val typeLabel = when(result.type) {
-        "link" -> "Tautan"
-        "chat" -> "Teks Chat"
-        "screenshot" -> "Screenshot"
-        "qr" -> "QR Code"
-        else -> "Analisis"
+        "link" -> "Verifikasi Tautan"
+        "chat" -> "Analisis Teks Chat"
+        "screenshot" -> "Analisis Gambar"
+        "qr" -> "Scan QR Code"
+        else -> "Hasil Analisis"
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(WhiteBackground)
+            .background(riskConfig.first)
     ) {
-        // Risk-tinted top strip — hasil jadi fokus, bukan hero navy
+        // Decorative Circles (Hero Style)
+        Canvas(modifier = Modifier.size(240.dp).offset(x = (-60).dp, y = (-60).dp)) {
+            drawCircle(
+                color = Color.White.copy(alpha = 0.08f),
+                radius = size.minDimension / 1.1f
+            )
+        }
+
+        // Header Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(riskConfig.first.copy(alpha = 0.12f))
                 .statusBarsPadding()
+                .padding(top = 16.dp, start = 12.dp, end = 20.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBackToHome) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = PrussianBlue)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Kembali",
+                        tint = Color.White
+                    )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = typeLabel,
-                        color = Slate500,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        text = "Hasil Analisis",
+                        color = Color.White,
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = riskConfig.second,
-                        color = riskConfig.first,
-                        fontFamily = DisplayFontFamily,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        text = typeLabel,
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
                 IconButton(onClick = onHistoryClick) {
-                    Icon(Icons.Default.History, contentDescription = "Riwayat", tint = PrussianBlue)
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = "Riwayat",
+                        tint = Color.White
+                    )
                 }
             }
         }
 
-        Column(
+        // Main Container (White Surface)
+        Surface(
             modifier = Modifier
-                .weight(1f)
-                .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(top = 130.dp),
+            color = WhiteBackground,
+            shape = RoundedCornerShape(40.dp, 40.dp)
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Risk Gauge — key agar animasi selalu reset saat analisis baru
-            key(result.inputSummary, result.riskScore, result.type) {
-                RiskGauge(score = result.riskScore, color = riskConfig.first)
-            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(modifier = Modifier.height(32.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                // Risk Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(riskConfig.first.copy(alpha = 0.1f))
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = riskConfig.second.uppercase(),
+                        color = riskConfig.first,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp
+                    )
+                }
 
-            Text(
-                text = "Skor ${result.riskScore}",
-                color = Slate500,
-                fontSize = 13.sp
-            )
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Risk Gauge
+                key(result.inputSummary, result.riskScore, result.type) {
+                    RiskGauge(score = result.riskScore, color = riskConfig.first)
+                }
 
-            Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Sections
-            ResultSection(title = "INPUT YANG DIANALISIS") {
                 Text(
-                    text = result.inputSummary,
-                    color = PrussianBlue.copy(alpha = 0.8f),
+                    text = "Skor Kepercayaan AI: ${result.riskScore}/100",
+                    color = Slate500,
                     fontSize = 14.sp,
-                    lineHeight = 22.sp
+                    fontWeight = FontWeight.Medium
                 )
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-            if (result.flags.isNotEmpty()) {
-                ResultSection(title = "INDIKATOR KECURIGAAN") {
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        result.flags.forEach { flag ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(riskConfig.first.copy(alpha = 0.1f))
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(flag, color = riskConfig.first.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                // Sections
+                ResultSection(title = "INPUT YANG DIANALISIS") {
+                    Text(
+                        text = result.inputSummary,
+                        color = PrussianBlue.copy(alpha = 0.8f),
+                        fontSize = 14.sp,
+                        lineHeight = 22.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (result.flags.isNotEmpty()) {
+                    ResultSection(title = "INDIKATOR KECURIGAAN") {
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            result.flags.forEach { flag ->
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(riskConfig.first.copy(alpha = 0.1f))
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(flag, color = riskConfig.first.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                }
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
+
+                ResultSection(
+                    title = "Penjelasan AI",
+                    icon = Icons.Default.Info,
+                    iconColor = Cerulean
+                ) {
+                    Text(
+                        text = result.explanation,
+                        color = PrussianBlue.copy(alpha = 0.8f),
+                        fontSize = 13.sp,
+                        lineHeight = 20.sp
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
-            }
 
-            ResultSection(
-                title = "Penjelasan AI",
-                icon = Icons.Default.Info,
-                iconColor = Cerulean
-            ) {
-                Text(
-                    text = result.explanation,
-                    color = PrussianBlue.copy(alpha = 0.8f),
-                    fontSize = 13.sp,
-                    lineHeight = 20.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ResultSection(
-                title = "Rekomendasi Tindakan",
-                icon = Icons.Default.Warning,
-                iconColor = riskConfig.first
-            ) {
-                Text(
-                    text = result.recommendation,
-                    color = PrussianBlue.copy(alpha = 0.8f),
-                    fontSize = 13.sp,
-                    lineHeight = 20.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Quick Actions
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
-                    onClick = onBlockDeleteClick,
-                    modifier = Modifier.weight(1f).height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.1f))
+                ResultSection(
+                    title = "Rekomendasi Tindakan",
+                    icon = Icons.Default.Warning,
+                    iconColor = riskConfig.first
                 ) {
-                    Text("Blokir & Hapus", color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = result.recommendation,
+                        color = PrussianBlue.copy(alpha = 0.8f),
+                        fontSize = 13.sp,
+                        lineHeight = 20.sp
+                    )
                 }
-                Button(
-                    onClick = onReportClick,
-                    modifier = Modifier.weight(1f).height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DeepNavy.copy(alpha = 0.05f))
-                ) {
-                    Text("Laporkan", color = PrussianBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // Learn More Card — navigasi ke artikel edukasi terkait
-            val articleTitle = learnMoreTitle ?: result.relatedArticle
-            if (!articleTitle.isNullOrBlank()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(YaleBlue.copy(alpha = 0.05f))
-                        .border(1.dp, YaleBlue.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
-                        .then(
-                            if (onLearnMoreClick != null) Modifier.clickable(onClick = onLearnMoreClick)
-                            else Modifier
-                        )
-                        .padding(16.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Cerulean.copy(alpha = 0.1f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.MenuBook,
-                                contentDescription = null,
-                                tint = Cerulean,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "Pelajari lebih lanjut",
-                                color = YaleBlue,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                articleTitle,
-                                color = PrussianBlue,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Buka artikel",
-                            tint = YaleBlue
-                        )
+                // Quick Actions
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(
+                        onClick = { showBlockDialog = true },
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = DangerRed.copy(alpha = 0.1f))
+                    ) {
+                        Text("Blokir & Hapus", color = DangerRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                        onClick = onReportClick,
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = DeepNavy.copy(alpha = 0.05f))
+                    ) {
+                        Text("Laporkan", color = PrussianBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Learn More Card
+                val articleTitle = learnMoreTitle ?: result.relatedArticle
+                if (!articleTitle.isNullOrBlank()) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = onLearnMoreClick != null) { onLearnMoreClick?.invoke() },
+                        color = Cerulean.copy(alpha = 0.05f),
+                        shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(1.dp, Cerulean.copy(alpha = 0.1f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Cerulean.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.MenuBook,
+                                    contentDescription = null,
+                                    tint = Cerulean,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Pelajari lebih lanjut",
+                                    color = Cerulean,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    articleTitle,
+                                    color = PrussianBlue,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Buka artikel",
+                                tint = Cerulean
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Bottom Button
+                Button(
+                    onClick = onBackToHome,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Cerulean)
+                ) {
+                    Text(
+                        text = "Kembali ke Beranda",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(40.dp))
             }
+        }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Bottom Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
-                    .clickable { onBackToHome() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Kembali ke Beranda",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
+        // Block Confirmation Dialog
+        if (showBlockDialog) {
+            AlertDialog(
+                onDismissRequest = { showBlockDialog = false },
+                title = { 
+                    Text(
+                        "Konfirmasi Tindakan", 
+                        fontWeight = FontWeight.Bold,
+                        color = PrussianBlue
+                    ) 
+                },
+                text = { 
+                    Text(
+                        "Apakah Anda yakin ingin memblokir pengirim dan menghapus pesan ini?",
+                        color = Slate500
+                    ) 
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showBlockDialog = false
+                            onBlockDeleteClick()
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = DangerRed)
+                    ) {
+                        Text("Ya, Blokir", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showBlockDialog = false },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Slate500)
+                    ) {
+                        Text("Batal")
+                    }
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = Color.White
+            )
         }
     }
 }
@@ -320,7 +397,7 @@ private fun RiskGauge(score: Int, color: Color) {
 
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 12.dp.toPx()
+            val strokeWidth = 14.dp.toPx()
             // Background arc
             drawArc(
                 color = PrussianBlue.copy(alpha = 0.05f),
@@ -342,7 +419,7 @@ private fun RiskGauge(score: Int, color: Color) {
             Text(
                 text = (animatedProgress.value * 100).toInt().toString(),
                 color = PrussianBlue,
-                fontSize = 56.sp,
+                fontSize = 60.sp,
                 fontWeight = FontWeight.Black
             )
             Text(
@@ -362,15 +439,13 @@ private fun ResultSection(
     iconColor: Color = Color.White,
     content: @Composable () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(CardWhite)
-            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(20.dp))
-            .padding(20.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
+        shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, DeepNavy.copy(alpha = 0.08f))
     ) {
-        Column {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (icon != null) {
                     Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(18.dp))
