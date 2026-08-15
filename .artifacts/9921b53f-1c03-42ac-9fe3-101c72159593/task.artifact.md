@@ -1,0 +1,6 @@
+- [ ] Implement `AnimatedNavBar.kt`
+    - [ ] Create custom shape for the background with a curve/bulge
+    - [ ] Implement floating circle animation
+    - [ ] Add icons and labels with selection states
+- [ ] Integrate `AnimatedNavBar` into `ScamShieldApp.kt`
+- [ ] Verify functionality and animations on device
