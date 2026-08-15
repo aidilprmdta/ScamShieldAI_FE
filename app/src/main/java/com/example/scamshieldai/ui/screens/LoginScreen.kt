@@ -69,7 +69,6 @@ fun LoginScreen(
         modifier = modifier
             .fillMaxSize()
             .background(YaleBlue)
-            .navigationBarsPadding()
     ) {
         Canvas(modifier = Modifier.size(200.dp).offset(x = (-50).dp, y = (-50).dp)) {
             drawCircle(
@@ -121,6 +120,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
                     .imePadding()
                     .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
