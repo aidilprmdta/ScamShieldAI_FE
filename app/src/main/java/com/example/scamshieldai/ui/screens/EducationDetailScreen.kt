@@ -3,7 +3,6 @@ package com.example.scamshieldai.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -123,26 +121,6 @@ fun EducationDetailScreen(
                 // Protection Tips Card
                 if (content.tips.isNotEmpty()) {
                     ProtectionTipsCard(content.tips)
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                // Done Button (Gradient)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
-                        .clickable { onBack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Selesai membaca",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(48.dp))
