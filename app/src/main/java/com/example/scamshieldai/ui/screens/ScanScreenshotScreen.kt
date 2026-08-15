@@ -75,7 +75,8 @@ fun ScanScreenshotScreen(
         ScreenTopBar(
             title = "Screenshot",
             subtitle = "Ambil teks dari gambar chat",
-            onBack = onBack
+            onBack = onBack,
+            isHero = true
         )
 
         Column(
