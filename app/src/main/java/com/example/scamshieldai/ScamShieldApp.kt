@@ -45,40 +45,13 @@ import com.example.scamshieldai.network.ScamShieldRepository
 import com.example.scamshieldai.settings.AppPreferences
 import com.example.scamshieldai.settings.HistoryAutoCleaner
 import com.example.scamshieldai.ui.components.AnalyzingOverlay
-import com.example.scamshieldai.ui.components.FloatingNavBar
+import com.example.scamshieldai.ui.components.AnimatedNavBar
 import com.example.scamshieldai.ui.components.NavigationItemData
 import com.example.scamshieldai.ui.feedback.AppSnackbarHost
 import com.example.scamshieldai.ui.feedback.showError
 import com.example.scamshieldai.ui.feedback.showInfo
 import com.example.scamshieldai.ui.feedback.showSuccess
-import com.example.scamshieldai.ui.screens.AboutScreen
-import com.example.scamshieldai.ui.screens.AdminReportsScreen
-import com.example.scamshieldai.ui.screens.BlockDeleteScreen
-import com.example.scamshieldai.ui.screens.ChangePasswordScreen
-import com.example.scamshieldai.ui.screens.CheckLinkScreen
-import com.example.scamshieldai.ui.screens.EditProfileScreen
-import com.example.scamshieldai.ui.screens.EducationCenterScreen
-import com.example.scamshieldai.ui.screens.EducationDetailScreen
-import com.example.scamshieldai.ui.screens.HelpCenterScreen
-import com.example.scamshieldai.ui.screens.HistoryItem
-import com.example.scamshieldai.ui.screens.HistoryScreen
-import com.example.scamshieldai.ui.screens.HomeScreen
-import com.example.scamshieldai.ui.screens.LoginScreen
-import com.example.scamshieldai.ui.screens.MyReportsScreen
-import com.example.scamshieldai.ui.screens.NotificationScreen
-import com.example.scamshieldai.ui.screens.PermissionManagementScreen
-import com.example.scamshieldai.ui.screens.ProfileScreen
-import com.example.scamshieldai.ui.screens.QuizScreen
-import com.example.scamshieldai.ui.screens.RegisterScreen
-import com.example.scamshieldai.ui.screens.ReportScreen
-import com.example.scamshieldai.ui.screens.ReportStatusScreen
-import com.example.scamshieldai.ui.screens.ResultScreen
-import com.example.scamshieldai.ui.screens.RiskLevel
-import com.example.scamshieldai.ui.screens.ScanChatScreen
-import com.example.scamshieldai.ui.screens.ScanQRScreen
-import com.example.scamshieldai.ui.screens.ScanResult
-import com.example.scamshieldai.ui.screens.ScanScreenshotScreen
-import com.example.scamshieldai.ui.screens.SecurityPrivacyScreen
+import com.example.scamshieldai.ui.screens.*
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -97,7 +70,6 @@ fun ScamShieldApp(
     val snackbarHostState = remember { SnackbarHostState() }
     var lastResult by remember { mutableStateOf<ScanResult?>(null) }
     var resultSessionId by remember { mutableIntStateOf(0) }
-    var completedEducationIds by remember { mutableStateOf(setOf<String>()) }
     val historyList = remember { mutableStateListOf<HistoryItem>() }
     var isHistoryLoading by remember { mutableStateOf(false) }
     var historyError by remember { mutableStateOf<String?>(null) }
@@ -301,10 +273,10 @@ fun ScamShieldApp(
 
     val navItems = remember(profileNavBadge) {
         listOf(
-            NavigationItemData("Beranda", "home", Icons.Filled.Home, Icons.Outlined.Home),
-            NavigationItemData("Riwayat", "history", Icons.Filled.History, Icons.Outlined.History),
-            NavigationItemData("Edukasi", "education_center", Icons.Filled.School, Icons.Outlined.School),
-            NavigationItemData("Profil", "profile", Icons.Filled.Person, Icons.Outlined.Person, badgeCount = profileNavBadge)
+            NavigationItemData(" ", "home", Icons.Filled.Home, Icons.Outlined.Home),
+            NavigationItemData(" ", "history", Icons.Filled.History, Icons.Outlined.History),
+            NavigationItemData(" ", "education_center", Icons.Filled.School, Icons.Outlined.School),
+            NavigationItemData(" ", "profile", Icons.Filled.Person, Icons.Outlined.Person, badgeCount = profileNavBadge)
         )
     }
 
@@ -312,13 +284,11 @@ fun ScamShieldApp(
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route ?: "home"
 
-    // Logic for highlighting the correct tab even in sub-pages
     val selectedRoute = when {
         currentRoute.startsWith("education_detail") -> "education_center"
         else -> currentRoute
     }
 
-    // Logic for showing Navbar: Hide on scanning, result, and auth screens
     val hideNavBarRoutes = listOf(
         "login", "register",
         "scan_chat", "check_link", "scan_screenshot", "scan_qr", 
@@ -333,303 +303,195 @@ fun ScamShieldApp(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { AppSnackbarHost(snackbarHostState) }
     ) { paddingValues ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)) {
-            NavHost(
-                navController = navController,
-                startDestination = "login",
-                modifier = Modifier.fillMaxSize()
-            ) {
-                composable("login") {
-                    val loginContext = LocalContext.current
-                    LoginScreen(
-                        onLoginSuccess = {
-                            coroutineScope.launch {
-                                AppPreferences.setSavedToken(loginContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
-                            }
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        },
-                        onNavigateToRegister = {
-                            navController.navigate("register")
-                        }
-                    )
-                }
-                composable("register") {
-                    val regContext = LocalContext.current
-                    RegisterScreen(
-                        onRegisterSuccess = {
-                            coroutineScope.launch {
-                                AppPreferences.setSavedToken(regContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
-                            }
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        },
-                        onNavigateToLogin = {
-                            navController.popBackStack()
-                        }
-                    )
-                }
-                composable("home") {
-                    val threatCount = remember(historyList) {
-                        historyList.count { it.result.riskLevel == RiskLevel.HIGH }
-                    }
-                    HomeScreen(
-                        threatCount = threatCount,
-                        onScanModeSelected = { mode ->
-                            when (mode) {
-                                "chat" -> navController.navigate("scan_chat")
-                                "link" -> navController.navigate("check_link")
-                                "screenshot" -> navController.navigate("scan_screenshot")
-                                "qr" -> navController.navigate("scan_qr")
-                                else -> navController.navigate("analyzing")
-                            }
-                        },
-                        onEducationSelected = {
-                            navController.navigate("education_center") {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Main Content Area
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)) {
+                NavHost(
+                    navController = navController,
+                    startDestination = "login",
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    composable("login") {
+                        val loginContext = LocalContext.current
+                        LoginScreen(
+                            onLoginSuccess = {
+                                coroutineScope.launch {
+                                    AppPreferences.setSavedToken(loginContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            },
+                            onNavigateToRegister = {
+                                navController.navigate("register")
                             }
-                        },
-                        onHistoryClick = {
-                            navController.navigate("history")
-                        }
-                    )
-                }
-                composable("scan_chat") {
-                    ScanChatScreen(
-                        onBack = { navController.popBackStack() },
-                        onAnalyze = { text ->
-                            analysis.start(
-                                errorPrefix = "Gagal menganalisis",
-                                remindLoginOnSuccess = true
-                            ) { repository.analyzeChat(text) }
-                        }
-                    )
-                }
-                composable("check_link") {
-                    CheckLinkScreen(
-                        onBack = { navController.popBackStack() },
-                        onCheck = { url ->
-                            analysis.start(
-                                errorPrefix = "Gagal menganalisis link",
-                                remindLoginOnSuccess = true
-                            ) { repository.analyzeLink(url) }
-                        }
-                    )
-                }
-                composable("scan_screenshot") {
-                    ScanScreenshotScreen(
-                        onBack = { navController.popBackStack() },
-                        onAnalyzeText = { text ->
-                            analysis.start(errorPrefix = "Gagal menganalisis screenshot") {
-                                repository.analyzeChat(text, source = "screenshot_ocr")
+                        )
+                    }
+                    composable("register") {
+                        val regContext = LocalContext.current
+                        RegisterScreen(
+                            onRegisterSuccess = {
+                                coroutineScope.launch {
+                                    AppPreferences.setSavedToken(regContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
+                                }
+                                navController.navigate("home") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            },
+                            onNavigateToLogin = {
+                                navController.popBackStack()
                             }
+                        )
+                    }
+                    composable("home") {
+                        val threatCount = remember(historyList) {
+                            historyList.count { it.result.riskLevel == RiskLevel.HIGH }
                         }
-                    )
-                }
-                composable("scan_qr") {
-                    ScanQRScreen(
-                        onBack = { navController.popBackStack() },
-                        onScanned = { data ->
-                            analysis.start(errorPrefix = "Gagal menganalisis QR") {
-                                repository.analyzeQr(data)
-                            }
-                        }
-                    )
-                }
-                composable(
-                    route = "education_detail/{id}",
-                    arguments = listOf(navArgument("id") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val id = backStackEntry.arguments?.getString("id")
-                    val content = EducationCatalog.findById(id)
-                    EducationDetailScreen(
-                        content = content,
-                        onBack = {
-                            id?.let { completedEducationIds = completedEducationIds + it }
-                            navController.popBackStack()
-                        }
-                    )
-                }
-                composable("education_center") {
-                    EducationCenterScreen(
-                        completedIds = completedEducationIds,
-                        onBack = { navController.popBackStack() },
-                        onItemClick = { item ->
-                            if (item.type == "KUIS") {
-                                navController.navigate("quiz_screen")
-                            } else {
-                                navController.navigate("education_detail/${item.id}")
-                            }
-                        }
-                    )
-                }
-                composable("quiz_screen") {
-                    QuizScreen(
-                        onBack = { navController.popBackStack() },
-                        onFinish = {
-                            completedEducationIds = completedEducationIds + "4" // ID for Quiz
-                            navController.popBackStack()
-                        }
-                    )
-                }
-                composable("history") {
-                    LaunchedEffect(Unit) { fetchHistory() }
-                    HistoryScreen(
-                        historyList = historyList,
-                        isLoading = isHistoryLoading,
-                        errorMessage = historyError,
-                        isLoggedIn = token != null,
-                        onBack = { navController.popBackStack() },
-                        onItemClick = { item ->
-                            lastResult = item.result
-                            resultSessionId += 1
-                            navController.navigate("result") {
-                                launchSingleTop = true
-                            }
-                        },
-                        onDeleteItem = { item ->
-                            coroutineScope.launch {
-                                repository.deleteHistory(item.id)
-                                    .onSuccess { fetchHistory() }
-                                    .onFailure { showError("Gagal menghapus: ${it.message}") }
-                            }
-                        },
-                        onRefresh = { fetchHistory() }
-                    )
-                }
-                composable("profile") {
-                    val context = LocalContext.current
-                    LaunchedEffect(Unit) { fetchReportBadgeCounts() }
-                    ProfileScreen(
-                        userName = userDisplayName.ifEmpty {
-                            userEmail.substringBefore("@").ifEmpty { "Pengguna" }
-                        },
-                        userEmail = userEmail,
-                        scanCount = historyList.size,
-                        threatCount = historyList.count { it.result.riskLevel == RiskLevel.HIGH },
-                        isAdmin = isAdmin,
-                        pendingMyReportsCount = pendingMyReportsCount,
-                        pendingAdminReportsCount = pendingAdminReportsCount,
-                        onEditProfileClick = {
-                            navController.navigate("edit_profile")
-                        },
-                        onAdminReportsClick = {
-                            coroutineScope.launch {
-                                isAdminLoading = true
-                                repository.getAdminReports().onSuccess { list ->
-                                    adminReports.clear()
-                                    adminReports.addAll(list)
-                                }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
-                                isAdminLoading = false
-                            }
-                            navController.navigate("admin_reports")
-                        },
-                        onMyReportsClick = {
-                            fetchMyReports()
-                            navController.navigate("my_reports")
-                        },
-                        onSecurityClick = {
-                            navController.navigate("security_privacy")
-                        },
-                        onNotificationClick = {
-                            navController.navigate("notifications")
-                        },
-                        onAboutClick = {
-                            navController.navigate("about")
-                        },
-                        onHelpClick = {
-                            navController.navigate("help_center")
-                        },
-                        onLogout = {
-                            AuthTokenStore.clear()
-                            historyList.clear()
-                            coroutineScope.launch { AppPreferences.setSavedToken(context, null) }
-                            navController.navigate("login") {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        }
-                    )
-                }
-                composable("edit_profile") {
-                    EditProfileScreen(
-                        initialName = userDisplayName.ifEmpty {
-                            userEmail.substringBefore("@")
-                        },
-                        initialEmail = userEmail,
-                        onBack = { navController.popBackStack() },
-                        onSave = { name, email, onDone ->
-                            coroutineScope.launch {
-                                repository.updateProfile(name, email)
-                                    .onSuccess { me ->
-                                        userEmail = me.email ?: email
-                                        userDisplayName = me.displayName?.takeIf { it.isNotBlank() }
-                                            ?: me.email?.substringBefore("@")
-                                            ?: name
-                                        isAdmin = me.admin
-                                        showSuccess("Profil berhasil diperbarui")
-                                        onDone(Result.success(Unit))
+                        HomeScreen(
+                            userName = userDisplayName,
+                            threatCount = threatCount,
+                            onScanModeSelected = { mode ->
+                                when (mode) {
+                                    "chat" -> navController.navigate("scan_chat")
+                                    "link" -> navController.navigate("check_link")
+                                    "screenshot" -> navController.navigate("scan_screenshot")
+                                    "qr" -> navController.navigate("scan_qr")
+                                    else -> navController.navigate("analyzing")
+                                }
+                            },
+                            onEducationSelected = {
+                                navController.navigate("education_center") {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
                                     }
-                                    .onFailure { onDone(Result.failure(it)) }
-                            }
-                        }
-                    )
-                }
-                composable("my_reports") {
-                    MyReportsScreen(
-                        reports = myReports,
-                        isLoading = isMyReportsLoading,
-                        onBack = { navController.popBackStack() },
-                        onReportClick = { report ->
-                            navController.navigate("report_status/${report.reportId}")
-                        },
-                        onRefresh = { fetchMyReports() }
-                    )
-                }
-                composable(
-                    route = "report_status/{report_id}",
-                    arguments = listOf(navArgument("report_id") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    val reportId = backStackEntry.arguments?.getString("report_id") ?: ""
-                    LaunchedEffect(reportId) {
-                        if (reportId.isNotEmpty()) {
-                            isReportDetailLoading = true
-                            reportDetail = null
-                            repository.getMyReport(reportId).onSuccess { reportDetail = it }
-                                .onFailure {
-                                    showError("Gagal memuat detail: ${it.message}")
-                                    reportDetail = null
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                            isReportDetailLoading = false
-                        }
-                    }
-                    ReportStatusScreen(
-                        report = if (reportDetail?.reportId == reportId) reportDetail else null,
-                        isLoading = isReportDetailLoading,
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-                composable("admin_reports") {
-                    if (!isAdmin) {
-                        LaunchedEffect(Unit) {
-                            navController.navigate("profile") {
-                                popUpTo(navController.graph.findStartDestination().id) { inclusive = false }
+                            },
+                            onHistoryClick = {
+                                navController.navigate("history")
                             }
-                            showError("Akses ditolak: hanya admin yang bisa mengelola laporan.")
-                        }
-                    } else {
-                        AdminReportsScreen(
-                            reports = adminReports,
-                            isLoading = isAdminLoading,
+                        )
+                    }
+                    composable("scan_chat") {
+                        ScanChatScreen(
                             onBack = { navController.popBackStack() },
-                            onRefresh = {
+                            onAnalyze = { text ->
+                                analysis.start(
+                                    errorPrefix = "Gagal menganalisis",
+                                    remindLoginOnSuccess = true
+                                ) { repository.analyzeChat(text) }
+                            }
+                        )
+                    }
+                    composable("check_link") {
+                        CheckLinkScreen(
+                            onBack = { navController.popBackStack() },
+                            onCheck = { url ->
+                                analysis.start(
+                                    errorPrefix = "Gagal menganalisis link",
+                                    remindLoginOnSuccess = true
+                                ) { repository.analyzeLink(url) }
+                            }
+                        )
+                    }
+                    composable("scan_screenshot") {
+                        ScanScreenshotScreen(
+                            onBack = { navController.popBackStack() },
+                            onAnalyzeText = { text ->
+                                analysis.start(errorPrefix = "Gagal menganalisis screenshot") {
+                                    repository.analyzeChat(text, source = "screenshot_ocr")
+                                }
+                            }
+                        )
+                    }
+                    composable("scan_qr") {
+                        ScanQRScreen(
+                            onBack = { navController.popBackStack() },
+                            onScanned = { data ->
+                                analysis.start(errorPrefix = "Gagal menganalisis QR") {
+                                    repository.analyzeQr(data)
+                                }
+                            }
+                        )
+                    }
+                    composable(
+                        route = "education_detail/{id}",
+                        arguments = listOf(navArgument("id") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val id = backStackEntry.arguments?.getString("id")
+                        val content = EducationCatalog.findById(id)
+                        EducationDetailScreen(
+                            content = content,
+                            onBack = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+                    composable("education_center") {
+                        EducationCenterScreen(
+                            onBack = { navController.popBackStack() },
+                            onItemClick = { item ->
+                                if (item.type == "KUIS") {
+                                    navController.navigate("quiz_screen")
+                                } else {
+                                    navController.navigate("education_detail/${item.id}")
+                                }
+                            }
+                        )
+                    }
+                    composable("quiz_screen") {
+                        QuizScreen(
+                            onBack = { navController.popBackStack() },
+                            onFinish = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+                    composable("history") {
+                        LaunchedEffect(Unit) { fetchHistory() }
+                        HistoryScreen(
+                            historyList = historyList,
+                            isLoading = isHistoryLoading,
+                            errorMessage = historyError,
+                            isLoggedIn = token != null,
+                            onBack = { navController.popBackStack() },
+                            onItemClick = { item ->
+                                lastResult = item.result
+                                resultSessionId += 1
+                                navController.navigate("result") {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onDeleteItem = { item ->
+                                coroutineScope.launch {
+                                    repository.deleteHistory(item.id)
+                                        .onSuccess { fetchHistory() }
+                                        .onFailure { showError("Gagal menghapus: ${it.message}") }
+                                }
+                            },
+                            onRefresh = { fetchHistory() }
+                        )
+                    }
+                    composable("profile") {
+                        val context = LocalContext.current
+                        LaunchedEffect(Unit) { fetchReportBadgeCounts() }
+                        ProfileScreen(
+                            userName = userDisplayName.ifEmpty {
+                                userEmail.substringBefore("@").ifEmpty { "Pengguna" }
+                            },
+                            userEmail = userEmail,
+                            scanCount = historyList.size,
+                            threatCount = historyList.count { it.result.riskLevel == RiskLevel.HIGH },
+                            isAdmin = isAdmin,
+                            pendingMyReportsCount = pendingMyReportsCount,
+                            pendingAdminReportsCount = pendingAdminReportsCount,
+                            onEditProfileClick = {
+                                navController.navigate("edit_profile")
+                            },
+                            onAdminReportsClick = {
                                 coroutineScope.launch {
                                     isAdminLoading = true
                                     repository.getAdminReports().onSuccess { list ->
@@ -638,219 +500,330 @@ fun ScamShieldApp(
                                     }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
                                     isAdminLoading = false
                                 }
+                                navController.navigate("admin_reports")
                             },
-                            onVerify = { reportId ->
-                                coroutineScope.launch {
-                                    repository.updateReportStatus(reportId, "verified").onSuccess { result ->
-                                        adminReports.replaceAll {
-                                            if (it.reportId == reportId) it.copy(
-                                                verifiedStatus = "verified",
-                                                verifiedBy = result.verifiedBy,
-                                                verifiedByEmail = result.verifiedByEmail,
-                                                verifiedAt = result.verifiedAt
-                                            ) else it
-                                        }
-                                        fetchReportBadgeCounts()
-                                        showSuccess("Laporan diverifikasi")
-                                    }.onFailure { showError("Gagal verifikasi: ${it.message}") }
-                                }
+                            onMyReportsClick = {
+                                fetchMyReports()
+                                navController.navigate("my_reports")
                             },
-                            onReject = { reportId ->
-                                coroutineScope.launch {
-                                    repository.updateReportStatus(reportId, "rejected").onSuccess { result ->
-                                        adminReports.replaceAll {
-                                            if (it.reportId == reportId) it.copy(
-                                                verifiedStatus = "rejected",
-                                                verifiedBy = result.verifiedBy,
-                                                verifiedByEmail = result.verifiedByEmail,
-                                                verifiedAt = result.verifiedAt
-                                            ) else it
-                                        }
-                                        fetchReportBadgeCounts()
-                                        showSuccess("Laporan ditolak")
-                                    }.onFailure { showError("Gagal menolak: ${it.message}") }
+                            onSecurityClick = {
+                                navController.navigate("security_privacy")
+                            },
+                            onNotificationClick = {
+                                navController.navigate("notifications")
+                            },
+                            onAboutClick = {
+                                navController.navigate("about")
+                            },
+                            onHelpClick = {
+                                navController.navigate("help_center")
+                            },
+                            onLogout = {
+                                AuthTokenStore.clear()
+                                historyList.clear()
+                                coroutineScope.launch { AppPreferences.setSavedToken(context, null) }
+                                navController.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
                                 }
                             }
                         )
                     }
-                }
-                composable("security_privacy") {
-                    SecurityPrivacyScreen(
-                        onBack = { navController.popBackStack() },
-                        onManagePermissions = { navController.navigate("permission_management") },
-                        onChangePassword = {
-                            if (token == null) {
-                                showError("Login diperlukan untuk mengubah kata sandi")
-                            } else {
-                                navController.navigate("change_password")
+                    composable("edit_profile") {
+                        EditProfileScreen(
+                            initialName = userDisplayName.ifEmpty {
+                                userEmail.substringBefore("@")
+                            },
+                            initialEmail = userEmail,
+                            onBack = { navController.popBackStack() },
+                            onSave = { name, email, onDone ->
+                                coroutineScope.launch {
+                                    repository.updateProfile(name, email)
+                                        .onSuccess { me ->
+                                            userEmail = me.email ?: email
+                                            userDisplayName = me.displayName?.takeIf { it.isNotBlank() }
+                                                ?: me.email?.substringBefore("@")
+                                                ?: name
+                                            isAdmin = me.admin
+                                            showSuccess("Profil berhasil diperbarui")
+                                            onDone(Result.success(Unit))
+                                        }
+                                        .onFailure { onDone(Result.failure(it)) }
+                                }
                             }
-                        },
-                        onAutoCleanEnabled = {
-                            coroutineScope.launch {
+                        )
+                    }
+                    composable("my_reports") {
+                        MyReportsScreen(
+                            reports = myReports,
+                            isLoading = isMyReportsLoading,
+                            onBack = { navController.popBackStack() },
+                            onReportClick = { report ->
+                                navController.navigate("report_status/${report.reportId}")
+                            },
+                            onRefresh = { fetchMyReports() }
+                        )
+                    }
+                    composable(
+                        route = "report_status/{report_id}",
+                        arguments = listOf(navArgument("report_id") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val reportId = backStackEntry.arguments?.getString("report_id") ?: ""
+                        LaunchedEffect(reportId) {
+                            if (reportId.isNotEmpty()) {
+                                isReportDetailLoading = true
+                                reportDetail = null
+                                repository.getMyReport(reportId).onSuccess { reportDetail = it }
+                                    .onFailure {
+                                        showError("Gagal memuat detail: ${it.message}")
+                                        reportDetail = null
+                                    }
+                                isReportDetailLoading = false
+                            }
+                        }
+                        ReportStatusScreen(
+                            report = if (reportDetail?.reportId == reportId) reportDetail else null,
+                            isLoading = isReportDetailLoading,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable("admin_reports") {
+                        if (!isAdmin) {
+                            LaunchedEffect(Unit) {
+                                navController.navigate("profile") {
+                                    popUpTo(navController.graph.findStartDestination().id) { inclusive = false }
+                                }
+                                showError("Akses ditolak: hanya admin yang bisa mengelola laporan.")
+                            }
+                        } else {
+                            AdminReportsScreen(
+                                reports = adminReports,
+                                isLoading = isAdminLoading,
+                                onBack = { navController.popBackStack() },
+                                onRefresh = {
+                                    coroutineScope.launch {
+                                        isAdminLoading = true
+                                        repository.getAdminReports().onSuccess { list ->
+                                            adminReports.clear()
+                                            adminReports.addAll(list)
+                                        }.onFailure { showError("Gagal memuat laporan: ${it.message}") }
+                                        isAdminLoading = false
+                                    }
+                                },
+                                onVerify = { reportId ->
+                                    coroutineScope.launch {
+                                        repository.updateReportStatus(reportId, "verified").onSuccess { result ->
+                                            adminReports.replaceAll {
+                                                if (it.reportId == reportId) it.copy(
+                                                    verifiedStatus = "verified",
+                                                    verifiedBy = result.verifiedBy,
+                                                    verifiedByEmail = result.verifiedByEmail,
+                                                    verifiedAt = result.verifiedAt
+                                                ) else it
+                                            }
+                                            fetchReportBadgeCounts()
+                                            showSuccess("Laporan diverifikasi")
+                                        }.onFailure { showError("Gagal verifikasi: ${it.message}") }
+                                    }
+                                },
+                                onReject = { reportId ->
+                                    coroutineScope.launch {
+                                        repository.updateReportStatus(reportId, "rejected").onSuccess { result ->
+                                            adminReports.replaceAll {
+                                                if (it.reportId == reportId) it.copy(
+                                                    verifiedStatus = "rejected",
+                                                    verifiedBy = result.verifiedBy,
+                                                    verifiedByEmail = result.verifiedByEmail,
+                                                    verifiedAt = result.verifiedAt
+                                                ) else it
+                                            }
+                                            fetchReportBadgeCounts()
+                                            showSuccess("Laporan ditolak")
+                                        }.onFailure { showError("Gagal menolak: ${it.message}") }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    composable("security_privacy") {
+                        SecurityPrivacyScreen(
+                            onBack = { navController.popBackStack() },
+                            onManagePermissions = { navController.navigate("permission_management") },
+                            onChangePassword = {
                                 if (token == null) {
-                                    showError("Login diperlukan untuk membersihkan riwayat")
-                                    return@launch
-                                }
-                                val deleted = HistoryAutoCleaner.cleanOldHistory(repository)
-                                fetchHistory()
-                                if (deleted > 0) {
-                                    showSuccess("Pembersihan otomatis: $deleted riwayat lama dihapus")
-                                }
-                            }
-                        }
-                    )
-                }
-                composable("change_password") {
-                    val pwdContext = LocalContext.current
-                    ChangePasswordScreen(
-                        onBack = { navController.popBackStack() },
-                        onSubmit = { currentPassword, newPassword, onDone ->
-                            coroutineScope.launch {
-                                repository.changePassword(currentPassword, newPassword)
-                                    .onSuccess { tokens ->
-                                        AppPreferences.setSavedToken(
-                                            pwdContext,
-                                            tokens.idToken,
-                                            tokens.refreshToken
-                                        )
-                                        onDone(Result.success(Unit))
-                                        showSuccess("Kata sandi berhasil diubah")
-                                        navController.popBackStack()
-                                    }
-                                    .onFailure { err ->
-                                        onDone(Result.failure(err))
-                                    }
-                            }
-                        }
-                    )
-                }
-                composable("permission_management") {
-                    PermissionManagementScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-                composable("notifications") {
-                    LaunchedEffect(Unit) { fetchNotifications() }
-                    NotificationScreen(
-                        notifications = notificationList,
-                        isLoading = isNotificationsLoading,
-                        errorMessage = notificationsError,
-                        onBack = { navController.popBackStack() },
-                        onRefresh = { fetchNotifications() },
-                        onNotificationClick = { item ->
-                            coroutineScope.launch {
-                                repository.markNotificationRead(item.id)
-                                fetchNotifications()
-                            }
-                            val reportId = item.data?.get("report_id")?.toString()
-                            if (!reportId.isNullOrBlank() &&
-                                (item.type == "report_status_updated" || item.type == "new_report")
-                            ) {
-                                if (item.type == "new_report" && isAdmin) {
-                                    navController.navigate("admin_reports")
+                                    showError("Login diperlukan untuk mengubah kata sandi")
                                 } else {
-                                    navController.navigate("report_status/$reportId")
+                                    navController.navigate("change_password")
+                                }
+                            },
+                            onAutoCleanEnabled = {
+                                coroutineScope.launch {
+                                    if (token == null) {
+                                        showError("Login diperlukan untuk membersihkan riwayat")
+                                        return@launch
+                                    }
+                                    val deleted = HistoryAutoCleaner.cleanOldHistory(repository)
+                                    fetchHistory()
+                                    if (deleted > 0) {
+                                        showSuccess("Pembersihan otomatis: $deleted riwayat lama dihapus")
+                                    }
                                 }
                             }
-                        }
-                    )
-                }
-                composable("about") {
-                    AboutScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-                composable("help_center") {
-                    HelpCenterScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-                composable("block_delete") {
-                    BlockDeleteScreen(
-                        onBackToHome = {
-                            navController.navigate("home") {
-                                popUpTo("home") { inclusive = true }
-                            }
-                        }
-                    )
-                }
-                composable("report") {
-                    ReportScreen(
-                        onBack = { navController.popBackStack() },
-                        onSubmit = {
-                            navController.navigate("home") {
-                                popUpTo("home") { inclusive = true }
-                            }
-                        },
-                        onSubmitReport = { type, content, note, onResult ->
-                            coroutineScope.launch {
-                                repository.submitReport(type, content, note)
-                                    .onSuccess {
-                                        fetchReportBadgeCounts()
-                                        fetchMyReports()
-                                        onResult(true, null)
-                                    }
-                                    .onFailure { err ->
-                                        onResult(false, err.message ?: "Gagal mengirim laporan")
-                                    }
-                            }
-                        }
-                    )
-                }
-                composable("analyzing") {
-                    AnalyzingOverlay()
-                }
-                composable("result") {
-                    val result = lastResult ?: ScanResult(
-                        type = "unknown",
-                        riskScore = 0,
-                        riskLevel = RiskLevel.LOW,
-                        inputSummary = "",
-                        flags = emptyList<String>(),
-                        explanation = "Tidak ada hasil analisis.",
-                        recommendation = "Silakan lakukan scan terlebih dahulu."
-                    )
-                    val relatedEducation = remember(result.relatedArticle, result.riskLevel, resultSessionId) {
-                        val shouldOffer = result.riskLevel != RiskLevel.LOW ||
-                            !result.relatedArticle.isNullOrBlank()
-                        if (!shouldOffer) null
-                        else EducationMatcher.findByCategory(
-                            category = result.relatedArticle,
-                            contents = educationContents,
-                            fallbackToFeatured = result.riskLevel != RiskLevel.LOW,
                         )
                     }
-                    key(resultSessionId, result.inputSummary, result.riskScore) {
-                        ResultScreen(
-                            result = result,
+                    composable("change_password") {
+                        val pwdContext = LocalContext.current
+                        ChangePasswordScreen(
+                            onBack = { navController.popBackStack() },
+                            onSubmit = { currentPassword, newPassword, onDone ->
+                                coroutineScope.launch {
+                                    repository.changePassword(currentPassword, newPassword)
+                                        .onSuccess { tokens ->
+                                            AppPreferences.setSavedToken(
+                                                pwdContext,
+                                                tokens.idToken,
+                                                tokens.refreshToken
+                                            )
+                                            onDone(Result.success(Unit))
+                                            showSuccess("Kata sandi berhasil diubah")
+                                            navController.popBackStack()
+                                        }
+                                        .onFailure { err ->
+                                            onDone(Result.failure(err))
+                                        }
+                                }
+                            }
+                        )
+                    }
+                    composable("permission_management") {
+                        PermissionManagementScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable("notifications") {
+                        LaunchedEffect(Unit) { fetchNotifications() }
+                        NotificationScreen(
+                            notifications = notificationList,
+                            isLoading = isNotificationsLoading,
+                            errorMessage = notificationsError,
+                            onBack = { navController.popBackStack() },
+                            onRefresh = { fetchNotifications() },
+                            onNotificationClick = { item ->
+                                coroutineScope.launch {
+                                    repository.markNotificationRead(item.id)
+                                    fetchNotifications()
+                                }
+                                val reportId = item.data?.get("report_id")?.toString()
+                                if (!reportId.isNullOrBlank() &&
+                                    (item.type == "report_status_updated" || item.type == "new_report")
+                                ) {
+                                    if (item.type == "new_report" && isAdmin) {
+                                        navController.navigate("admin_reports")
+                                    } else {
+                                        navController.navigate("report_status/$reportId")
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    composable("about") {
+                        AboutScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable("help_center") {
+                        HelpCenterScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                    composable("block_delete") {
+                        BlockDeleteScreen(
                             onBackToHome = {
                                 navController.navigate("home") {
-                                    popUpTo("result") { inclusive = true }
+                                    popUpTo("home") { inclusive = true }
                                 }
+                                showSuccess("Tindakan berhasil dilakukan")
+                            }
+                        )
+                    }
+                    composable("report") {
+                        ReportScreen(
+                            onBack = { navController.popBackStack() },
+                            onSubmit = {
+                                navController.navigate("home") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                                showSuccess("Laporan berhasil dikirim")
                             },
-                            onHistoryClick = {
-                                navController.navigate("history")
-                            },
-                            onBlockDeleteClick = {
-                                navController.navigate("block_delete")
-                            },
-                            onReportClick = {
-                                navController.navigate("report")
-                            },
-                            learnMoreTitle = relatedEducation?.title,
-                            onLearnMoreClick = relatedEducation?.let { content ->
-                                {
-                                    navController.navigate("education_detail/${content.id}")
+                            onSubmitReport = { type, content, note, onResult ->
+                                coroutineScope.launch {
+                                    repository.submitReport(type, content, note)
+                                        .onSuccess {
+                                            fetchReportBadgeCounts()
+                                            fetchMyReports()
+                                            onResult(true, null)
+                                        }
+                                        .onFailure { err ->
+                                            onResult(false, err.message ?: "Gagal mengirim laporan")
+                                        }
                                 }
                             }
                         )
+                    }
+                    composable("analyzing") {
+                        AnalyzingOverlay()
+                    }
+                    composable("result") {
+                        val result = lastResult ?: ScanResult(
+                            type = "unknown",
+                            riskScore = 0,
+                            riskLevel = RiskLevel.LOW,
+                            inputSummary = "",
+                            flags = emptyList<String>(),
+                            explanation = "Tidak ada hasil analisis.",
+                            recommendation = "Silakan lakukan scan terlebih dahulu."
+                        )
+                        val relatedEducation = remember(result.relatedArticle, result.riskLevel, resultSessionId) {
+                            val shouldOffer = result.riskLevel != RiskLevel.LOW ||
+                                !result.relatedArticle.isNullOrBlank()
+                            if (!shouldOffer) null
+                            else EducationMatcher.findByCategory(
+                                category = result.relatedArticle,
+                                contents = educationContents,
+                                fallbackToFeatured = result.riskLevel != RiskLevel.LOW,
+                            )
+                        }
+                        key(resultSessionId, result.inputSummary, result.riskScore) {
+                            ResultScreen(
+                                result = result,
+                                onBackToHome = {
+                                    navController.navigate("home") {
+                                        popUpTo("result") { inclusive = true }
+                                    }
+                                },
+                                onHistoryClick = {
+                                    navController.navigate("history")
+                                },
+                                onBlockDeleteClick = {
+                                    navController.navigate("block_delete")
+                                },
+                                onReportClick = {
+                                    navController.navigate("report")
+                                },
+                                learnMoreTitle = relatedEducation?.title,
+                                onLearnMoreClick = relatedEducation?.let { content ->
+                                    {
+                                        navController.navigate("education_detail/${content.id}")
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
 
-            // Floating Navigation Bar
+            // Animated Navigation Bar
             if (showNavBar) {
-                FloatingNavBar(
+                AnimatedNavBar(
                     items = navItems,
                     currentRoute = selectedRoute,
                     onItemClick = { route ->
