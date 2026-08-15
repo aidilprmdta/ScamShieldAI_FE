@@ -1,26 +1,18 @@
 package com.example.scamshieldai.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.QrCodeScanner
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -34,132 +26,289 @@ import com.example.scamshieldai.ui.theme.*
 
 @Composable
 fun HomeScreen(
+    userName: String,
     threatCount: Int,
     onScanModeSelected: (String) -> Unit,
     onEducationSelected: () -> Unit,
     onHistoryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(WhiteBackground, Slate100.copy(alpha = 0.55f), WhiteBackground)
-                )
-            )
-    ) {
-        LazyColumn(
+    var selectedMode by remember { mutableStateOf<String?>(null) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.bagrounapp),
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            item {
-                HeroSection(threatCount, onHistoryClick)
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(28.dp))
-                Text(
-                    text = "Mulai periksa",
-                    color = PrussianBlue,
-                    fontFamily = DisplayFontFamily,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Pilih jenis konten yang ingin dicek.",
-                    color = Slate500,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                ScanModeGrid(onScanModeSelected)
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(28.dp))
-                EducationBanner(onEducationSelected)
-                Spacer(modifier = Modifier.height(100.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun HeroSection(
-    threatCount: Int,
-    onHistoryClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(listOf(DeepNavy, YaleBlue))
-            )
-            .statusBarsPadding()
-            .padding(bottom = 28.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            contentScale = ContentScale.FillBounds
+        )
+        
+        Scaffold(
+            topBar = { HomeTopBar(threatCount, onHistoryClick) },
+            containerColor = Color.Transparent,
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentPadding = PaddingValues(bottom = 100.dp)
             ) {
-                Text(
-                    text = "ScamShield",
-                    color = Color.White,
-                    fontFamily = DisplayFontFamily,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                item {
+                    GreetingSection(userName)
+                }
 
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.12f))
-                        .clickable { onHistoryClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        contentDescription = "Riwayat",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    if (threatCount > 0) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(6.dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(DangerRed)
-                        )
+                item {
+                    EducationBannerCard(onEducationSelected)
+                }
+
+                item {
+                    OngoingProjectsSection(onHistoryClick)
+                }
+                
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            ScanModeCard(
+                                title = "Scan Chat",
+                                desc = "Analisis teks pesan",
+                                icon = Icons.Outlined.ChatBubbleOutline,
+                                isSelected = selectedMode == "chat",
+                                modifier = Modifier.weight(1f),
+                                onClick = { 
+                                    selectedMode = "chat"
+                                    onScanModeSelected("chat") 
+                                }
+                            )
+                            ScanModeCard(
+                                title = "Screenshot",
+                                desc = "Ekstrak teks gambar",
+                                icon = Icons.Outlined.Image,
+                                isSelected = selectedMode == "screenshot",
+                                modifier = Modifier.weight(1f),
+                                onClick = { 
+                                    selectedMode = "screenshot"
+                                    onScanModeSelected("screenshot") 
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            ScanModeCard(
+                                title = "Cek Tautan",
+                                desc = "Verifikasi URL aman",
+                                icon = Icons.Outlined.Link,
+                                isSelected = selectedMode == "link",
+                                modifier = Modifier.weight(1f),
+                                onClick = { 
+                                    selectedMode = "link"
+                                    onScanModeSelected("link") 
+                                }
+                            )
+                            ScanModeCard(
+                                title = "Scan QR",
+                                desc = "Pindai kode QRIS",
+                                icon = Icons.Outlined.QrCodeScanner,
+                                isSelected = selectedMode == "qr",
+                                modifier = Modifier.weight(1f),
+                                onClick = { 
+                                    selectedMode = "qr"
+                                    onScanModeSelected("qr") 
+                                }
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(12.dp))
+@Composable
+private fun ScanModeCard(
+    title: String,
+    desc: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val containerColor = if (isSelected) DeepNavy else Color.White
+    val contentColor = if (isSelected) Color.White else Color.Black
+    val iconColor = if (isSelected) Color.White else DeepNavy
+    val descColor = if (isSelected) Color.White.copy(alpha = 0.7f) else Slate500
+    val borderColor = if (isSelected) DeepNavy else Slate100
+
+    Card(
+        modifier = modifier
+            .aspectRatio(1f)
+            .border(2.dp, borderColor, RoundedCornerShape(24.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(32.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Cek chat, tautan, screenshot, atau QR sebelum Anda bertindak.",
-                color = Color.White.copy(alpha = 0.78f),
-                fontSize = 15.sp,
-                lineHeight = 22.sp
+                text = title,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = contentColor
             )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = desc,
+                fontSize = 13.sp,
+                color = descColor,
+                lineHeight = 18.sp
+            )
+        }
+    }
+}
 
-            if (threatCount > 0) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "$threatCount risiko tinggi di riwayat",
-                    color = Cerulean,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
+@Composable
+private fun HomeTopBar(threatCount: Int, onHistoryClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.GridView,
+            contentDescription = "Menu",
+            tint = PrussianBlue,
+            modifier = Modifier.size(28.dp)
+        )
+        
+        Text(
+            text = "Home",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = PrussianBlue
+        )
+
+        BadgedBox(
+            badge = {
+                if (threatCount > 0) {
+                    Badge(containerColor = DangerRed) {
+                        Text(text = threatCount.toString(), color = Color.White)
+                    }
+                }
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Notifications,
+                contentDescription = "Notifikasi",
+                tint = PrussianBlue,
+                modifier = Modifier
+                    .size(28.dp)
+                    .clickable { onHistoryClick() }
+            )
+        }
+    }
+}
+
+@Composable
+private fun GreetingSection(userName: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.logoapp_removebg),
+            contentDescription = "Logo Aplikasi",
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+        
+        Spacer(modifier = Modifier.width(16.dp))
+        
+        Column {
+            Text(
+                text = "Hi ${userName.ifEmpty { "Pengguna" }}!",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = PrussianBlue
+            )
+            Text(
+                text = "Selamat Pagi",
+                fontSize = 16.sp,
+                color = Slate500
+            )
+        }
+    }
+}
+
+@Composable
+private fun EducationBannerCard(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(24.dp))
+            .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Pusat Edukasi",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrussianBlue
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Pelajari modus penipuan terbaru dan cara menghindarinya.",
+                        fontSize = 14.sp,
+                        color = Slate500,
+                        lineHeight = 20.sp
+                    )
+                }
+                
+                Image(
+                    painter = painterResource(id = R.drawable.edukasicard_beranda),
+                    contentDescription = "Edukasi",
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
                 )
             }
         }
@@ -167,118 +316,26 @@ private fun HeroSection(
 }
 
 @Composable
-private fun ScanModeGrid(onScanModeSelected: (String) -> Unit) {
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            ScanModeItem(
-                title = "Chat",
-                desc = "Teks pesan",
-                icon = Icons.Outlined.ChatBubbleOutline,
-                modifier = Modifier.weight(1f),
-                onClick = { onScanModeSelected("chat") }
-            )
-            ScanModeItem(
-                title = "Screenshot",
-                desc = "Gambar chat",
-                icon = Icons.Outlined.Image,
-                modifier = Modifier.weight(1f),
-                onClick = { onScanModeSelected("screenshot") }
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            ScanModeItem(
-                title = "Tautan",
-                desc = "URL / link",
-                icon = Icons.Outlined.Link,
-                modifier = Modifier.weight(1f),
-                onClick = { onScanModeSelected("link") }
-            )
-            ScanModeItem(
-                title = "QR",
-                desc = "Kode QRIS",
-                icon = Icons.Outlined.QrCodeScanner,
-                modifier = Modifier.weight(1f),
-                onClick = { onScanModeSelected("qr") }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ScanModeItem(
-    title: String,
-    desc: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .border(1.dp, DeepNavy.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.7f), RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(18.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Cerulean,
-            modifier = Modifier.size(26.dp)
-        )
-        Spacer(modifier = Modifier.height(14.dp))
-        Text(
-            text = title,
-            color = PrussianBlue,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = desc,
-            color = Slate500,
-            fontSize = 12.sp,
-            lineHeight = 16.sp
-        )
-    }
-}
-
-@Composable
-private fun EducationBanner(onClick: () -> Unit) {
+private fun OngoingProjectsSection(onViewAll: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(YaleBlue)
-            .clickable(onClick = onClick)
-            .padding(20.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                "Pusat Edukasi",
-                color = Color.White,
-                fontFamily = DisplayFontFamily,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                "Artikel dan kuis tentang modus penipuan.",
-                color = Color.White.copy(alpha = 0.72f),
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
-        }
-
-        Image(
-            painter = painterResource(id = R.drawable.edukasi),
-            contentDescription = null,
-            modifier = Modifier
-                .width(96.dp)
-                .height(72.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
+        Text(
+            text = "Analisis Terbaru",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = PrussianBlue
+        )
+        
+        Text(
+            text = "lihat semua",
+            fontSize = 14.sp,
+            color = Slate400,
+            modifier = Modifier.clickable { onViewAll() }
         )
     }
 }
@@ -286,5 +343,11 @@ private fun EducationBanner(onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun HomePreview() {
-    HomeScreen(threatCount = 2, onScanModeSelected = {}, onEducationSelected = {}, onHistoryClick = {})
+    HomeScreen(
+        userName = "Jenifer",
+        threatCount = 2,
+        onScanModeSelected = {},
+        onEducationSelected = {},
+        onHistoryClick = {}
+    )
 }
