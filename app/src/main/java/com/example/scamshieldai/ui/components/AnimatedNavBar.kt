@@ -9,23 +9,21 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.ui.theme.Cerulean
-import com.example.scamshieldai.ui.theme.PrussianBlue
 
 @Composable
 fun AnimatedNavBar(
@@ -47,12 +45,11 @@ fun AnimatedNavBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .height(100.dp)
+            .background(Color.White)
             .onGloballyPositioned { width = it.size.width },
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = Alignment.BottomStart
     ) {
-        // Background with curve
+        // Background with bulge (higher curve to match floating circle)
         val backgroundShape = remember(animatedIndex, items.size) {
             GenericShape { size, _ ->
                 val itemWidth = size.width / items.size
@@ -60,22 +57,19 @@ fun AnimatedNavBar(
                 val radius = 45.dp.value * density.density
                 
                 moveTo(0f, 0f)
-                // Left part
                 lineTo(centerCircle - radius * 1.5f, 0f)
                 
-                // Curve up (Bulge)
                 cubicTo(
                     x1 = centerCircle - radius * 0.8f, y1 = 0f,
-                    x2 = centerCircle - radius * 0.8f, y2 = -radius * 0.8f,
-                    x3 = centerCircle, y3 = -radius * 0.8f
+                    x2 = centerCircle - radius * 0.9f, y2 = -radius * 0.75f,
+                    x3 = centerCircle, y3 = -radius * 0.75f
                 )
                 cubicTo(
-                    x1 = centerCircle + radius * 0.8f, y1 = -radius * 0.8f,
+                    x1 = centerCircle + radius * 0.9f, y1 = -radius * 0.75f,
                     x2 = centerCircle + radius * 0.8f, y2 = 0f,
                     x3 = centerCircle + radius * 1.5f, y3 = 0f
                 )
                 
-                // Right part
                 lineTo(size.width, 0f)
                 lineTo(size.width, size.height)
                 lineTo(0f, size.height)
@@ -83,28 +77,35 @@ fun AnimatedNavBar(
             }
         }
 
+        // Base background (docked style)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp)
-                .shadow(12.dp, RoundedCornerShape(24.dp))
-                .background(Color.White, RoundedCornerShape(24.dp))
+                .height(72.dp)
+                .shadow(16.dp, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                .background(Color.White, RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
         )
 
-        // Floating Circle
-        val itemWidthDp = with(density) { (width / items.size).toDp() }
-        val circleOffset by animateFloatAsState(
-            targetValue = (selectedIndex * (width / items.size).toFloat()) + (width / items.size / 2f),
-            animationSpec = spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessLow),
-            label = "circleOffset"
+        // The Bulge overlay
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(Color.White, backgroundShape)
         )
+
+        // Floating Circle Position (Higher elevation to ensure it's above text labels)
+        val itemWidthFloat = if (width > 0) width.toFloat() / items.size else 0f
+        val circleX = (animatedIndex * itemWidthFloat) + (itemWidthFloat / 2f)
 
         Box(
             modifier = Modifier
-                .offset(
-                    x = with(density) { (circleOffset).toDp() } - 30.dp,
-                    y = (-40).dp
-                )
+                .offset {
+                    IntOffset(
+                        x = (circleX - with(density) { 30.dp.toPx() }).toInt(),
+                        y = with(density) { (-64).dp.toPx() }.toInt()
+                    )
+                }
                 .size(60.dp)
                 .shadow(8.dp, CircleShape)
                 .background(Cerulean, CircleShape),
@@ -116,13 +117,31 @@ fun AnimatedNavBar(
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
             )
+            if (items[selectedIndex].badgeCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-4).dp, y = 4.dp)
+                        .size(18.dp)
+                        .background(Color.Red, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (items[selectedIndex].badgeCount > 99) "99+" else items[selectedIndex].badgeCount.toString(),
+                        color = Color.White,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
 
         // Icons and Labels
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp),
+                .navigationBarsPadding()
+                .height(72.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEachIndexed { index, item ->
@@ -143,12 +162,31 @@ fun AnimatedNavBar(
                         modifier = Modifier.offset(y = if (isSelected) 15.dp else 0.dp)
                     ) {
                         if (!isSelected) {
-                            Icon(
-                                imageVector = item.unselectedIcon,
-                                contentDescription = item.title,
-                                tint = Color.Gray.copy(alpha = 0.6f),
-                                modifier = Modifier.size(24.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = item.unselectedIcon,
+                                    contentDescription = item.title,
+                                    tint = Color.Gray.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                if (item.badgeCount > 0) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .offset(x = 8.dp, y = (-8).dp)
+                                            .size(16.dp)
+                                            .background(Color.Red, CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = if (item.badgeCount > 99) "99+" else item.badgeCount.toString(),
+                                            color = Color.White,
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -163,8 +201,3 @@ fun AnimatedNavBar(
         }
     }
 }
-
-// Reuse or copy NavigationItemData if needed, but it's already in FloatingNavBar.kt
-// For now I'll use the one from FloatingNavBar.kt
-import androidx.compose.foundation.shape.RoundedCornerShape
-import com.example.scamshieldai.ui.components.NavigationItemData
