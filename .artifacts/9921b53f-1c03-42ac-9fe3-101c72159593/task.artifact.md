@@ -1,6 +1,17 @@
-- [ ] Implement `AnimatedNavBar.kt`
-    - [ ] Create custom shape for the background with a curve/bulge
-    - [ ] Implement floating circle animation
-    - [ ] Add icons and labels with selection states
-- [ ] Integrate `AnimatedNavBar` into `ScamShieldApp.kt`
-- [ ] Verify functionality and animations on device
+- [x] Implementasikan `AnimatedNavBar.kt`
+    - [x] Buat bentuk khusus (custom shape) untuk latar belakang dengan kurva/tonjolan
+    - [x] Implementasikan animasi lingkaran melayang
+    - [x] Tambahkan ikon dan label dengan status pemilihan
+- [x] Integrasikan `AnimatedNavBar` ke dalam `ScamShieldApp.kt`
+- [x] Verifikasi fungsionalitas dan animasi pada perangkat
+- [x] Redesain `HomeScreen.kt`
+    - [x] Update parameter `HomeScreen` (tambah `userName`)
+    - [x] Implementasikan `HomeTopBar` & `GreetingSection` (dengan Logo Shield)
+    - [x] Implementasikan `WelcomeBanner` (Tanpa Search Bar)
+    - [x] Implementasikan `OngoingProjectsSection` & `ProjectCard`
+    - [x] Hubungkan data riwayat ke dalam card proyek
+- [x] Ganti Welcome Card dengan Edukasi
+    - [x] Update `HomeScreen.kt`: Ubah `WelcomeBanner` menjadi `EducationBannerCard`
+    - [x] Sesuaikan teks dan gambar edukasi
+- [x] Update `ScamShieldApp.kt` untuk meneruskan data user
+- [ ] Verifikasi tampilan baru di emulator/perangkat
