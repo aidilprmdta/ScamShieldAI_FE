@@ -63,7 +63,8 @@ fun CheckLinkScreen(
         ScreenTopBar(
             title = "Cek tautan",
             subtitle = "Tempel URL sebelum diklik",
-            onBack = onBack
+            onBack = onBack,
+            isHero = true
         )
 
         Column(
