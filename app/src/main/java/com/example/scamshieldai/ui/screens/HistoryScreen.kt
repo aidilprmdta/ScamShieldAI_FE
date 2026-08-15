@@ -1,8 +1,6 @@
 package com.example.scamshieldai.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -21,8 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import com.example.scamshieldai.ui.components.ScreenTopBar
+import com.example.scamshieldai.R
 import com.example.scamshieldai.ui.theme.*
 
 data class HistoryItem(
@@ -53,6 +53,7 @@ fun HistoryScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedFilter by remember { mutableStateOf("Semua") }
+    var itemToDelete by remember { mutableStateOf<HistoryItem?>(null) }
     
     val filteredList = remember(selectedFilter, historyList) {
         when (selectedFilter) {
@@ -71,31 +72,71 @@ fun HistoryScreen(
         )
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(WhiteBackground)
+            .background(DeepNavy)
     ) {
-        ScreenTopBar(
-            title = "Riwayat",
-            subtitle = "Hasil analisis sebelumnya",
-            onBack = onBack
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            HistoryStatText(stats[RiskLevel.HIGH] ?: 0, "tinggi", DangerRed)
-            HistoryStatText(stats[RiskLevel.MEDIUM] ?: 0, "sedang", WarningYellow)
-            HistoryStatText(stats[RiskLevel.LOW] ?: 0, "aman", SafeGreen)
+        // Decorative Circles (Hero Style)
+        Canvas(modifier = Modifier.size(200.dp).offset(x = (-50).dp, y = (-50).dp)) {
+            drawCircle(
+                color = Color.White.copy(alpha = 0.03f),
+                radius = size.minDimension / 1.1f
+            )
         }
 
-        val pullRefreshState = rememberPullToRefreshState()
+        // Header Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 16.dp, start = 16.dp, end = 24.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Kembali",
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Riwayat",
+                        color = Color.White,
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Ringkasan hasil analisis Anda",
+                        color = Color.White.copy(alpha = 0.7f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                Image(
+                    painter = painterResource(id = R.drawable.logoapp_removebg),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+            }
+        }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        // Main Container (White Surface)
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 160.dp),
+            color = WhiteBackground,
+            shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+        ) {
+            val pullRefreshState = rememberPullToRefreshState()
+
             PullToRefreshBox(
                 isRefreshing = isLoading,
                 onRefresh = onRefresh,
@@ -104,14 +145,44 @@ fun HistoryScreen(
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 24.dp, bottom = 110.dp)
+                    contentPadding = PaddingValues(bottom = 110.dp)
                 ) {
+                    // 3 Stat Cards at the top of the container
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            StatCardHistory(
+                                count = stats[RiskLevel.HIGH] ?: 0,
+                                label = "Tinggi",
+                                color = DangerRed,
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatCardHistory(
+                                count = stats[RiskLevel.MEDIUM] ?: 0,
+                                label = "Sedang",
+                                color = WarningYellow,
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatCardHistory(
+                                count = stats[RiskLevel.LOW] ?: 0,
+                                label = "Aman",
+                                color = SafeGreen,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    // Filter Buttons (Pengelompokan)
                     item {
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 16.dp),
-                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            contentPadding = PaddingValues(horizontal = 24.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             val filters = listOf("Semua", "Risiko Tinggi", "Risiko Sedang", "Aman")
@@ -125,72 +196,100 @@ fun HistoryScreen(
                         }
                     }
 
+                    // Empty State
                     if (!isLoading && filteredList.isEmpty()) {
                         item {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 80.dp),
+                                    .padding(top = 60.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.Outlined.ChatBubbleOutline,
                                         contentDescription = null,
-                                        tint = Slate400,
-                                        modifier = Modifier.size(64.dp)
+                                        tint = Slate100,
+                                        modifier = Modifier.size(80.dp)
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
                                         text = when {
-                                            errorMessage != null -> "Gagal memuat riwayat"
-                                            !isLoggedIn -> "Login untuk melihat riwayat"
-                                            else -> "Belum ada riwayat"
+                                            errorMessage != null -> "Gagal memuat"
+                                            !isLoggedIn -> "Login diperlukan"
+                                            else -> "Belum ada data"
                                         },
-                                        color = Slate500,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold
+                                        color = PrussianBlue,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold
                                     )
                                     Text(
                                         text = when {
                                             errorMessage != null -> errorMessage
-                                            !isLoggedIn -> "Hasil scan tersimpan setelah Anda login"
-                                            else -> "Hasil deteksi akan muncul di sini setelah scan saat login"
+                                            !isLoggedIn -> "Masuk untuk melihat riwayat scan"
+                                            else -> "Hasil analisis akan muncul di sini"
                                         },
-                                        color = Slate400,
-                                        fontSize = 13.sp
+                                        color = Slate500,
+                                        fontSize = 14.sp
                                     )
                                 }
                             }
                         }
                     }
 
+                    // History Cards List
                     items(filteredList) { item ->
                         HistoryCard(
                             item = item,
                             onClick = { onItemClick(item) },
-                            onDelete = { onDeleteItem(item) },
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                            onDelete = { itemToDelete = item },
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)
                         )
                     }
                 }
             }
         }
-    }
-}
 
-
-@Composable
-private fun HistoryStatText(count: Int, label: String, color: Color) {
-    Column {
-        Text(
-            text = count.toString(),
-            color = color,
-            fontFamily = DisplayFontFamily,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(text = label, color = Slate500, fontSize = 12.sp)
+        // Delete Confirmation Dialog
+        if (itemToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { itemToDelete = null },
+                title = { 
+                    Text(
+                        "Hapus Riwayat?", 
+                        fontWeight = FontWeight.Bold,
+                        color = PrussianBlue
+                    ) 
+                },
+                text = { 
+                    Text(
+                        "Apakah Anda yakin ingin menghapus hasil analisis ini dari riwayat Anda?",
+                        color = Slate500
+                    ) 
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            itemToDelete?.let { onDeleteItem(it) }
+                            itemToDelete = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = DangerRed)
+                    ) {
+                        Text("Ya, Hapus", fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { itemToDelete = null },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Slate500)
+                    ) {
+                        Text("Tidak")
+                    }
+                },
+                shape = RoundedCornerShape(24.dp),
+                containerColor = Color.White
+            )
+        }
     }
 }
 
@@ -202,25 +301,28 @@ private fun StatCardHistory(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = Color.White.copy(alpha = 0.08f),
+        color = Color.White,
         shape = RoundedCornerShape(20.dp),
-        modifier = modifier
+        border = BorderStroke(1.dp, DeepNavy.copy(alpha = 0.05f)),
+        modifier = modifier.shadow(8.dp, RoundedCornerShape(20.dp), spotColor = color.copy(alpha = 0.2f))
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = count.toString(),
                 color = color,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                fontFamily = DisplayFontFamily
             )
             Text(
                 text = label,
-                color = Color.White.copy(alpha = 0.6f),
+                color = Slate500,
                 fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp
             )
         }
     }
@@ -232,23 +334,28 @@ private fun FilterChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) Cerulean else DeepNavy.copy(alpha = 0.05f)
+    val bgColor = if (isSelected) Cerulean else Color.White
     val textColor = if (isSelected) Color.White else Slate500
+    val borderColor = if (isSelected) Cerulean else Slate100
 
-    Box(
+    Surface(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(bgColor)
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+            .clickable { onClick() },
+        color = bgColor,
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, borderColor)
     ) {
-        Text(
-            text = label,
-            color = textColor,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold
-        )
+        Box(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                color = textColor,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -280,20 +387,15 @@ private fun HistoryCard(
         else -> Icons.Outlined.Link
     }
 
-    val iconColor = when (result.type) {
-        "chat" -> Cerulean
-        "link" -> SafeGreen
-        "screenshot" -> Color(0xFFA855F7)
-        "qr" -> WarningYellow
-        else -> Cerulean
-    }
+    // Icon color follows risk level
+    val iconColor = riskColor
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(CardWhite)
-            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+            .background(Color.White)
+            .border(1.dp, DeepNavy.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
@@ -302,8 +404,8 @@ private fun HistoryCard(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(iconColor.copy(alpha = 0.1f)),
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(iconColor.copy(alpha = 0.08f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
@@ -317,8 +419,8 @@ private fun HistoryCard(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = riskLabel,
-                        color = riskColor.copy(alpha = 0.8f),
-                        fontSize = 11.sp,
+                        color = riskColor,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         letterSpacing = 0.5.sp
                     )
@@ -337,7 +439,7 @@ private fun HistoryCard(
                 Text(
                     text = item.timeAgo,
                     color = Slate500,
-                    fontSize = 12.sp
+                    fontSize = 11.sp
                 )
             }
 
@@ -347,20 +449,20 @@ private fun HistoryCard(
                 Text(
                     text = result.riskScore.toString(),
                     color = riskColor,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Black
                 )
                 Text(
                     text = "SKOR",
-                    color = Slate500,
-                    fontSize = 9.sp,
+                    color = Slate500.copy(alpha = 0.6f),
+                    fontSize = 8.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Hapus",
-                    tint = Slate500.copy(alpha = 0.6f),
+                    tint = Slate400,
                     modifier = Modifier
                         .size(18.dp)
                         .clickable { onDelete() }
