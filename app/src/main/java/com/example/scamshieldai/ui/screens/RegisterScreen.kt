@@ -74,7 +74,6 @@ fun RegisterScreen(
         modifier = modifier
             .fillMaxSize()
             .background(YaleBlue)
-            .navigationBarsPadding()
     ) {
         Canvas(modifier = Modifier.size(200.dp).offset(x = 250.dp, y = (-50).dp)) {
             drawCircle(
@@ -126,6 +125,7 @@ fun RegisterScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
                     .imePadding()
                     .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
