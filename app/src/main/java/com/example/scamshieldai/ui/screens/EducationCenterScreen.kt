@@ -46,8 +46,7 @@ data class EducationItem(
 fun EducationCenterScreen(
     onBack: () -> Unit,
     onItemClick: (EducationItem) -> Unit,
-    modifier: Modifier = Modifier,
-    completedIds: Set<String> = emptySet()
+    modifier: Modifier = Modifier
 ) {
     var selectedCategory by remember { mutableStateOf("Semua") }
 
@@ -75,45 +74,53 @@ fun EducationCenterScreen(
         }
     }
 
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(WhiteBackground)
-    ) {
-        ScreenTopBar(
-            title = "Edukasi",
-            subtitle = "Artikel dan kuis modus penipuan",
-            onBack = onBack
+    Box(modifier = modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.baground_edukasi),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 8.dp, bottom = 110.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
         ) {
-            // Featured Card
-            item {
-                FeaturedCard(
-                    onClick = { onItemClick(allItems[0]) }
-                )
-            }
+            ScreenTopBar(
+                title = "Edukasi",
+                subtitle = "Artikel dan kuis modus penipuan",
+                onBack = onBack,
+                isHero = true
+            )
 
-            // Category Filters
-            item {
-                CategoryFilters(
-                    selectedCategory = selectedCategory,
-                    onCategorySelected = { selectedCategory = it }
-                )
-            }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 8.dp, bottom = 110.dp)
+            ) {
+                // Featured Card
+                item {
+                    FeaturedCard(
+                        onClick = { onItemClick(allItems[0]) }
+                    )
+                }
 
-            // Content List
-            items(filteredItems) { item ->
-                EducationCard(
-                    item = item,
-                    isCompleted = completedIds.contains(item.id),
-                    onClick = { onItemClick(item) },
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                )
+                // Category Filters
+                item {
+                    CategoryFilters(
+                        selectedCategory = selectedCategory,
+                        onCategorySelected = { selectedCategory = it }
+                    )
+                }
+
+                // Content List
+                items(filteredItems) { item ->
+                    EducationCard(
+                        item = item,
+                        onClick = { onItemClick(item) },
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
     }
@@ -234,8 +241,7 @@ private fun FilterChip(
 private fun EducationCard(
     item: EducationItem,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isCompleted: Boolean = false
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
@@ -285,16 +291,6 @@ private fun EducationCard(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(item.duration, color = Slate500, fontSize = 11.sp)
-                    
-                    if (isCompleted) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Selesai",
-                            tint = SafeGreen,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))
