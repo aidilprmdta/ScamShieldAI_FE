@@ -43,7 +43,8 @@ fun ScanChatScreen(
         ScreenTopBar(
             title = "Scan chat",
             subtitle = "Tempel teks pesan yang ingin dicek",
-            onBack = onBack
+            onBack = onBack,
+            isHero = true
         )
 
         Column(
