@@ -38,7 +38,7 @@ fun normalizeBaseUrl(raw: String): String {
 }
 
 val devBaseUrl = normalizeBaseUrl(
-    localProperties.getProperty("DEV_BASE_URL", "http://192.168.1.8:8000/")
+    localProperties.getProperty("DEV_BASE_URL", "http://192.168.1.89:8000/")
 )
 
 android {
