@@ -135,7 +135,7 @@ private fun FeaturedCard(
             .fillMaxWidth()
             .height(220.dp)
             .padding(20.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(DeepNavy)
             .clickable { onClick() }
     ) {
@@ -223,7 +223,7 @@ private fun FilterChip(
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 10.dp)
@@ -246,9 +246,9 @@ private fun EducationCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(CardWhite)
-            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
@@ -256,7 +256,7 @@ private fun EducationCard(
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(DeepNavy.copy(alpha = 0.05f)),
                 contentAlignment = Alignment.Center
             ) {

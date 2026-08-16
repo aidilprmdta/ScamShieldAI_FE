@@ -187,26 +187,4 @@ private fun NumberedTipItem(number: Int, text: String) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun EducationDetailPreview() {
-    EducationDetailScreen(
-        content = EducationContent(
-            id = "1",
-            title = "Waspada Phishing: Kenali Tautan Palsu",
-            category = "Phishing",
-            duration = "3 menit",
-            description = listOf(
-                "Phishing adalah modus penipuan digital di mana penipu membuat situs web atau pesan palsu yang menyerupai lembaga resmi (bank, e-commerce, pemerintah) untuk mencuri data pribadi dan keuangan Anda.",
-                "Para penipu biasanya mengirimkan tautan melalui SMS, WhatsApp, atau email yang terlihat resmi. Tautan tersebut membawa Anda ke situs palsu yang sangat mirip dengan aslinya."
-            ),
-            tips = listOf(
-                "Periksa URL dengan teliti — domain resmi tidak menggunakan .xyz, .info, atau angka acak",
-                "Bank dan e-commerce TIDAK pernah meminta password via link",
-                "Waspadai pesan dengan urgensi \"segera\" atau \"dalam 24 jam\"",
-                "Gunakan ScamShield AI sebelum klik tautan apapun yang mencurigakan"
-            )
-        ),
-        onBack = {}
-    )
-}
+
