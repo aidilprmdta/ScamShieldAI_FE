@@ -1,6 +1,0 @@
-- `[x]` Implementasi Header Hero Dinamis (Warna sesuai risiko) di `ResultScreen.kt`
-- `[x]` Tambahkan elemen dekoratif sirkular pada header
-- `[x]` Update navigasi dan teks header menjadi warna putih
-- `[x]` Tambahkan kontainer putih (Surface) melengkung untuk isi hasil scan
-- `[x]` Sesuaikan padding dan layout konten agar pas di dalam kontainer baru
-- `[x]` Verifikasi build dan visual untuk berbagai tingkat risiko
