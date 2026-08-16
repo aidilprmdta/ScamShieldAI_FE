@@ -1,7 +1,6 @@
 package com.example.scamshieldai.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.*
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.*
@@ -11,15 +10,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,12 +47,12 @@ fun QuizScreen(
                 "Anda menerima SMS: \"Selamat! Rekening Anda menang Rp 10 juta. Klik http://bca-promo.xyz untuk klaim.\" Apa yang Anda lakukan?",
                 listOf(
                     "Langsung klik link karena menarik",
-                    "Scan dulu dengan ScamShield AI sebelum klik",
+                    "Cek dulu di ScamShield sebelum klik",
                     "Forward ke teman untuk konfirmasi",
                     "Hubungi BCA melalui 1500888 untuk verifikasi"
                 ),
                 listOf(1, 3),
-                "Benar! Domain .xyz bukan domain resmi BCA. Selalu verifikasi melalui saluran resmi atau gunakan ScamShield AI sebelum klik tautan apapun."
+                "Domain .xyz bukan milik BCA. Pastikan lewat saluran resmi, atau cek tautannya di ScamShield dulu."
             ),
             QuizScenario(
                 "2", 2,
@@ -68,7 +64,7 @@ fun QuizScreen(
                     "Abaikan dan blokir"
                 ),
                 listOf(1, 2),
-                "Tepat! Penipu tidak akan bisa menjawab pertanyaan personal. Konfirmasi via nomor lama adalah cara paling aman."
+                "Konfirmasi lewat nomor lama atau pertanyaan yang hanya keluarga tahu."
             )
         )
     }
@@ -78,7 +74,7 @@ fun QuizScreen(
     var isConfirmed by remember { mutableStateOf(false) }
     var score by remember { mutableIntStateOf(0) }
     var isFinished by remember { mutableStateOf(false) }
-    
+
     val currentScenario = scenarios[currentIndex]
     val scrollState = rememberScrollState()
 
@@ -127,9 +123,9 @@ fun QuizScreen(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 text = currentScenario.question,
                 color = PrussianBlue,
@@ -140,11 +136,10 @@ fun QuizScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Options
             currentScenario.options.forEachIndexed { index, option ->
                 val isSelected = selectedIndices.contains(index)
                 val isCorrect = currentScenario.correctOptionIndices.contains(index)
-                
+
                 QuizOptionCard(
                     text = option,
                     isSelected = isSelected,
@@ -165,7 +160,6 @@ fun QuizScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Feedback Box
             AnimatedVisibility(
                 visible = isConfirmed,
                 enter = fadeIn() + expandVertically()
@@ -173,9 +167,9 @@ fun QuizScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(12.dp))
                         .background(Cerulean.copy(alpha = 0.05f))
-                        .border(1.dp, Cerulean.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
+                        .border(1.dp, Cerulean.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                         .padding(20.dp)
                 ) {
                     Text(
@@ -186,27 +180,23 @@ fun QuizScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(40.dp))
         }
 
-        // Bottom Button
         Box(modifier = Modifier.padding(20.dp).navigationBarsPadding()) {
-            val buttonText = if (!isConfirmed) "Konfirmasi Jawaban" 
+            val buttonText = if (!isConfirmed) "Konfirmasi Jawaban"
                             else if (currentIndex < scenarios.size - 1) "Pertanyaan Berikutnya \u2192"
                             else "Lihat Hasil"
-            
+
             val isButtonEnabled = selectedIndices.isNotEmpty()
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isButtonEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
-                        else Brush.linearGradient(listOf(DeepNavy.copy(alpha = 0.05f), DeepNavy.copy(alpha = 0.05f)))
-                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isButtonEnabled) Cerulean else Slate100)
                     .clickable(enabled = isButtonEnabled) {
                         if (!isConfirmed) {
                             val isCorrect = currentScenario.correctOptionIndices.any { selectedIndices.contains(it) }
@@ -226,7 +216,7 @@ fun QuizScreen(
             ) {
                 Text(
                     text = buttonText,
-                    color = if (isButtonEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
+                    color = if (isButtonEnabled) Color.White else Slate500,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -241,17 +231,6 @@ private fun QuizResultContent(
     total: Int,
     onBackToEducation: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "celebration")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale"
-    )
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -260,34 +239,28 @@ private fun QuizResultContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Celebration Icon with Pulse
         Box(
             modifier = Modifier
-                .size(140.dp)
-                .drawBehind {
-                    drawCircle(
-                        color = Cerulean.copy(alpha = 0.1f),
-                        radius = (size.minDimension / 2) * scale
-                    )
-                }
-                .border(2.dp, Cerulean.copy(alpha = 0.3f), CircleShape),
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Cerulean.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = null,
                 tint = Cerulean,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(56.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(48.dp))
 
         Text(
-            text = "Kuis Selesai!",
+            text = "Selesai",
             color = PrussianBlue,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.ExtraBold
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -319,13 +292,12 @@ private fun QuizResultContent(
 
         Spacer(modifier = Modifier.height(64.dp))
 
-        // Back Button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
+                .clip(RoundedCornerShape(12.dp))
+                .background(Cerulean)
                 .clickable { onBackToEducation() },
             contentAlignment = Alignment.Center
         ) {
@@ -353,7 +325,7 @@ private fun QuizOptionCard(
         isSelected -> Cerulean
         else -> DeepNavy.copy(alpha = 0.1f)
     }
-    
+
     val bgColor = when {
         isCorrect == true -> SafeGreen.copy(alpha = 0.05f)
         isWrong == true -> DangerRed.copy(alpha = 0.05f)
@@ -363,9 +335,9 @@ private fun QuizOptionCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
@@ -387,9 +359,9 @@ private fun QuizOptionCard(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Text(
                 text = text,
                 color = if (isCorrect == true || isWrong == true || isSelected) PrussianBlue else PrussianBlue.copy(alpha = 0.7f),
