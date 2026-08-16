@@ -58,7 +58,7 @@ class ScamShieldMessagingService : FirebaseMessagingService() {
             }
             if (!allowed) return@launch
 
-            val title = message.notification?.title ?: message.data["title"] ?: "ScamShield AI"
+            val title = message.notification?.title ?: message.data["title"] ?: "ScamShield"
             val body = message.notification?.body ?: message.data["body"] ?: ""
             showNotification(title, body, message.data)
         }
