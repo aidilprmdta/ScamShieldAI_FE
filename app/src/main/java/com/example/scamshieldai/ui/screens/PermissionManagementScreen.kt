@@ -28,7 +28,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -134,7 +133,7 @@ fun PermissionManagementScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Kelola izin yang dipakai ScamShield AI untuk fitur pemindaian dan peringatan.",
+                text = "Atur izin kamera, notifikasi, dan galeri.",
                 color = Slate500,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
@@ -144,11 +143,9 @@ fun PermissionManagementScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(12.dp, RoundedCornerShape(24.dp), spotColor = YaleBlue.copy(alpha = 0.05f)),
+                modifier = Modifier.fillMaxWidth(),
                 color = CardWhite,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
             ) {
                 Column {
