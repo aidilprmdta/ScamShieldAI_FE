@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,7 +59,7 @@ fun ReportScreen(
     ) {
         ScreenTopBar(
             title = "Laporkan",
-            subtitle = "Kirim temuan untuk ditinjau",
+            subtitle = "Kirim laporan untuk ditinjau",
             onBack = if (isSubmitting) null else onBack
         )
 
@@ -73,7 +72,7 @@ fun ReportScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Isi kategori dan detail temuan. Laporan masuk ke antrean peninjauan.",
+                text = "Pilih kategori dan isi detail bila perlu.",
                 color = Slate500,
                 fontSize = 15.sp,
                 lineHeight = 22.sp
@@ -82,11 +81,10 @@ fun ReportScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "PILIH KATEGORI",
+                text = "Pilih kategori",
                 color = Slate500,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -155,11 +153,10 @@ fun ReportScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "DETAIL TAMBAHAN (OPSIONAL)",
+                text = "Detail tambahan (opsional)",
                 color = Slate500,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -208,16 +205,8 @@ fun ReportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (isEnabled) Brush.linearGradient(listOf(Cerulean, YaleBlue))
-                        else Brush.linearGradient(
-                            listOf(
-                                DeepNavy.copy(alpha = 0.05f),
-                                DeepNavy.copy(alpha = 0.05f)
-                            )
-                        )
-                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isEnabled) Cerulean else Slate100)
                     .clickable(enabled = isEnabled) {
                         val reportType = when (selectedCategory) {
                             "Phishing / Tautan Palsu" -> "link"
@@ -259,7 +248,7 @@ fun ReportScreen(
                 } else {
                     Text(
                         text = "Kirim Laporan",
-                        color = if (isEnabled) Color.White else PrussianBlue.copy(alpha = 0.2f),
+                        color = if (isEnabled) Color.White else Slate500,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -306,7 +295,7 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Terima kasih! Kontribusi Anda membantu AI kami menjadi lebih pintar dalam mendeteksi ancaman serupa di masa depan.",
+            text = "Laporan sudah masuk antrean. Statusnya bisa dicek di Laporan Saya.",
             color = Slate500,
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
@@ -321,10 +310,10 @@ private fun ReportSuccessContent(onBackToHome: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = DeepNavy.copy(alpha = 0.05f))
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Cerulean)
         ) {
-            Text("Kembali ke Beranda", color = PrussianBlue, fontWeight = FontWeight.Bold)
+            Text("Kembali ke Beranda", color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }
