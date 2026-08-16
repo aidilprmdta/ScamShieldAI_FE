@@ -2,7 +2,7 @@ package com.example.scamshieldai.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val WhiteBackground = Color(0xFFFEFCFB)
+val WhiteBackground = Color(0xFFF7F9FC)
 val PrussianBlue = Color(0xFF0A1128)
 val DeepNavy = Color(0xFF001F54)
 val YaleBlue = Color(0xFF034078)
