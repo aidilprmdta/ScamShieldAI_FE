@@ -8,19 +8,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Article
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -51,19 +47,19 @@ fun EducationCenterScreen(
     var selectedCategory by remember { mutableStateOf("Semua") }
 
     val allItems = listOf(
-        EducationItem("0", "Panduan Lengkap Mengenali Penipuan Digital 2026", "Keamanan", "BACAAN WAJIB", "10 menit", R.drawable.bacaan_wajib),
-        EducationItem("1", "Waspada Phishing: Kenali Tautan Palsu", "Phishing", "ARTIKEL", "3 menit", R.drawable.phising),
-        EducationItem("2", "Modus \"Mama Minta Transfer\" — Rekayasa Sosial", "Rekayasa Sosial", "ARTIKEL", "4 menit", R.drawable.chatpalsu),
-        EducationItem("3", "QRIS Palsu & Quishing — Bahaya di Balik QR Code", "QRIS Palsu", "ARTIKEL", "3 menit", R.drawable.qushing),
-        EducationItem("5", "Jangan Asal Scan! Cara Cerdas Membedakan QRIS Asli vs QRIS Palsu", "QRIS Palsu", "ARTIKEL", "5 menit", R.drawable.qushing),
-        EducationItem("6", "Terlanjur Klik Link Mencurigakan? Lakukan 5 Langkah Penyelamatan Darurat!", "Keamanan", "ARTIKEL", "4 menit", R.drawable.scamp_no_palsu),
-        EducationItem("7", "Mengenal 7 Wajah Phishing: Jangan Terkecoh Modus yang Mengintai Anda!", "Phishing", "ARTIKEL", "6 menit", R.drawable.phising),
-        EducationItem("8", "Hukum Indonesia Tidak Tinggal Diam: Sanksi Pidana & Hak Ganti Rugi Korban Phishing", "Hukum", "ARTIKEL", "5 menit", R.drawable.bacaan_wajib),
-        EducationItem("9", "Awas Penyusup Senyap! Bagaimana Malware Menguras Rekening Anda Tanpa Disadari", "Keamanan", "ARTIKEL", "5 menit", R.drawable.phising),
-        EducationItem("10", "Jebakan Sosial Media: Trik Licik Penipu Menandai Anda di WhatsApp dan Instagram", "Rekayasa Sosial", "ARTIKEL", "4 menit", R.drawable.phising),
-        EducationItem("11", "Panduan Khusus Pemilik Toko (Merchant): Amankan QRIS Anda dari Tangan Jahil!", "Bisnis", "ARTIKEL", "5 menit", R.drawable.qushing),
-        EducationItem("12", "Mengintip Dapur Penetas Tautan Phishing: Seberapa Mudah Halaman Palsu Dibuat?", "Teknis", "ARTIKEL", "6 menit", R.drawable.phising),
-        EducationItem("4", "Kuis: Bisakah Kamu Bedakan Mana yang Scam?", "Simulasi", "KUIS", "5 menit")
+        EducationItem("0", "Dasar mengenali penipuan digital", "Keamanan", "BACAAN WAJIB", "10 menit", R.drawable.bacaan_wajib),
+        EducationItem("1", "Mengenali tautan phishing", "Phishing", "ARTIKEL", "3 menit", R.drawable.phising),
+        EducationItem("2", "Modus mama minta transfer", "Rekayasa Sosial", "ARTIKEL", "4 menit", R.drawable.chatpalsu),
+        EducationItem("3", "QRIS palsu dan quishing", "QRIS Palsu", "ARTIKEL", "3 menit", R.drawable.qushing),
+        EducationItem("5", "Membedakan QRIS asli dan palsu", "QRIS Palsu", "ARTIKEL", "5 menit", R.drawable.qushing),
+        EducationItem("6", "Langkah jika sudah klik tautan mencurigakan", "Keamanan", "ARTIKEL", "4 menit", R.drawable.scamp_no_palsu),
+        EducationItem("7", "Jenis-jenis phishing", "Phishing", "ARTIKEL", "6 menit", R.drawable.phising),
+        EducationItem("8", "Sanksi hukum dan hak korban phishing", "Hukum", "ARTIKEL", "5 menit", R.drawable.bacaan_wajib),
+        EducationItem("9", "Malware yang menguras rekening", "Keamanan", "ARTIKEL", "5 menit", R.drawable.phising),
+        EducationItem("10", "Penipuan lewat WhatsApp dan Instagram", "Rekayasa Sosial", "ARTIKEL", "4 menit", R.drawable.phising),
+        EducationItem("11", "Mengamankan QRIS toko", "Bisnis", "ARTIKEL", "5 menit", R.drawable.qushing),
+        EducationItem("12", "Bagaimana halaman phishing dibuat", "Teknis", "ARTIKEL", "6 menit", R.drawable.phising),
+        EducationItem("4", "Kuis: bedakan pesan scam", "Simulasi", "KUIS", "5 menit")
     )
 
     val filteredItems = remember(selectedCategory) {
@@ -89,7 +85,7 @@ fun EducationCenterScreen(
         ) {
             ScreenTopBar(
                 title = "Edukasi",
-                subtitle = "Artikel dan kuis modus penipuan",
+                subtitle = "Artikel dan kuis singkat",
                 onBack = onBack,
                 isHero = true
             )
@@ -98,14 +94,12 @@ fun EducationCenterScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(top = 8.dp, bottom = 110.dp)
             ) {
-                // Featured Card
                 item {
                     FeaturedCard(
                         onClick = { onItemClick(allItems[0]) }
                     )
                 }
 
-                // Category Filters
                 item {
                     CategoryFilters(
                         selectedCategory = selectedCategory,
@@ -113,7 +107,6 @@ fun EducationCenterScreen(
                     )
                 }
 
-                // Content List
                 items(filteredItems) { item ->
                     EducationCard(
                         item = item,
@@ -135,11 +128,10 @@ private fun FeaturedCard(
             .fillMaxWidth()
             .height(220.dp)
             .padding(20.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(DeepNavy)
             .clickable { onClick() }
     ) {
-        // Background Image
         Image(
             painter = painterResource(id = R.drawable.bacaan_wajib),
             contentDescription = null,
@@ -148,46 +140,34 @@ private fun FeaturedCard(
             alpha = 0.8f
         )
 
-        // Gradient Overlay for readability
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            DeepNavy.copy(alpha = 0.9f)
-                        ),
-                        startY = 100f
-                    )
-                )
-        )
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(DeepNavy)
                 .padding(20.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Cerulean)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Text("Panduan", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+            Column {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Cerulean)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text("Panduan", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Dasar mengenali penipuan digital",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 24.sp
+                )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Panduan Lengkap Mengenali Penipuan Digital 2026",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 24.sp
-            )
         }
     }
 }
-
 
 @Composable
 private fun CategoryFilters(
@@ -200,10 +180,10 @@ private fun CategoryFilters(
             .fillMaxWidth()
             .padding(vertical = 24.dp),
         contentPadding = PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(categories) { category ->
-            FilterChip(
+            UnderlineFilter(
                 label = category,
                 isSelected = selectedCategory == category,
                 onClick = { onCategorySelected(category) }
@@ -213,26 +193,24 @@ private fun CategoryFilters(
 }
 
 @Composable
-private fun FilterChip(
+private fun UnderlineFilter(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) Cerulean else DeepNavy.copy(alpha = 0.05f)
-    val textColor = if (isSelected) Color.White else Slate500
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(bgColor)
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 10.dp)
-    ) {
+    Column(modifier = Modifier.clickable { onClick() }) {
         Text(
             text = label,
-            color = textColor,
+            color = if (isSelected) Cerulean else Slate500,
             fontSize = 13.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(if (isSelected) Cerulean else Color.Transparent)
         )
     }
 }
@@ -246,9 +224,9 @@ private fun EducationCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(CardWhite)
-            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+            .border(1.dp, YaleBlue.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .padding(16.dp)
     ) {
@@ -256,7 +234,7 @@ private fun EducationCard(
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(DeepNavy.copy(alpha = 0.05f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -292,9 +270,9 @@ private fun EducationCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(item.duration, color = Slate500, fontSize = 11.sp)
                 }
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = item.title,
                     color = PrussianBlue,
@@ -304,9 +282,9 @@ private fun EducationCard(
                     lineHeight = 20.sp,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = item.category,
                     color = Cerulean,
