@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -99,11 +98,10 @@ fun NotificationScreen(
                 .padding(horizontal = 24.dp)
         ) {
             Text(
-                text = "INBOX",
+                text = "Inbox",
                 color = Slate500,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.sp,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
             )
 
@@ -163,11 +161,9 @@ fun NotificationScreen(
                 }
                 else -> {
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = YaleBlue.copy(alpha = 0.05f)),
+                        modifier = Modifier.fillMaxWidth(),
                         color = CardWhite,
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
                     ) {
                         Column {
@@ -192,11 +188,9 @@ fun NotificationScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = YaleBlue.copy(alpha = 0.1f)),
+                modifier = Modifier.fillMaxWidth(),
                 color = if (isAllNotificationsEnabled) YaleBlue else CardWhite,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.1f))
             ) {
                 Row(
@@ -249,20 +243,17 @@ fun NotificationScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "KATEGORI NOTIFIKASI",
+                text = "Kategori",
                 color = Slate500,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.sp,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
             )
 
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(12.dp, RoundedCornerShape(24.dp), spotColor = YaleBlue.copy(alpha = 0.05f)),
+                modifier = Modifier.fillMaxWidth(),
                 color = CardWhite,
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
             ) {
                 Column(modifier = Modifier.alpha(if (isAllNotificationsEnabled) 1f else 0.5f)) {
