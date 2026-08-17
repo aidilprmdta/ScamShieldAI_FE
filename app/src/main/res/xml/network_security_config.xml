@@ -8,6 +8,7 @@
         <domain includeSubdomains="true">192.168.1.8</domain>
         <domain includeSubdomains="true">192.168.1.89</domain>
         <domain includeSubdomains="true">192.168.110.163</domain>
+        <domain includeSubdomains="true">192.168.1.122</domain>
         <domain includeSubdomains="true">localhost</domain>
     </domain-config>
     <!-- Release: hanya HTTPS (BASE_URL production pakai https://) -->
