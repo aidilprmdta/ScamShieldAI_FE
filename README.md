@@ -59,7 +59,9 @@ Aplikasi berkomunikasi dengan server backend FastAPI via REST API. Konfigurasika
 sdk.dir=C:\\Users\\<NAMA_USER>\\AppData\\Local\\Android\\Sdk
 
 # Opsi A: Jika menggunakan Android Emulator di PC yang sama:
-DEV_BASE_URL=http://10.0.2.2:8000/
+DEV_BASE_URL=http://10.0.2.2:8000
+\
+/
 
 # Opsi B: Jika menggunakan Smartphone Fisik (PC dan Smartphone terhubung di Wi-Fi yang sama):
 # Cari IP PC Anda (misal: jalankan `ipconfig` di Windows -> IPv4: 192.168.1.50)
