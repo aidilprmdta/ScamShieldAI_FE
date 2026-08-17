@@ -42,7 +42,7 @@ fun CheckLinkScreen(
     val scrollState = rememberScrollState()
 
     val checkPoints = listOf(
-        "Reputasi domain (Google Safe Browsing)",
+        "Reputasi database ancaman (URLhaus)",
         "Pola URL phishing & typosquatting",
         "Validasi HTTPS & sertifikat",
         "Ekspansi shortlink mencurigakan"
