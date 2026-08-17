@@ -37,9 +37,7 @@ fun ProfileScreen(
     isAdmin: Boolean = false,
     pendingMyReportsCount: Int = 0,
     pendingAdminReportsCount: Int = 0,
-    onSecurityClick: () -> Unit,
-    onNotificationClick: () -> Unit,
-    onAboutClick: () -> Unit,
+    onSecurityClick: () -> Unit, onAboutClick: () -> Unit,
     onHelpClick: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
     onMyReportsClick: () -> Unit = {},
@@ -73,8 +71,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
-                        .border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape),
+                        .background(Color.White.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -157,12 +154,6 @@ fun ProfileScreen(
                         title = "Keamanan",
                         modifier = Modifier.weight(1f),
                         onClick = onSecurityClick,
-                    )
-                    FolderMenuCard(
-                        icon = Icons.Outlined.Notifications,
-                        title = "Notifikasi",
-                        modifier = Modifier.weight(1f),
-                        onClick = onNotificationClick
                     )
                     FolderMenuCard(
                         icon = Icons.Outlined.Person,
@@ -266,8 +257,7 @@ private fun SectionContainer(content: @Composable () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color.White,
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, DeepNavy.copy(alpha = 0.08f))
+        shape = RoundedCornerShape(24.dp)
     ) {
         content()
     }
@@ -334,8 +324,7 @@ private fun FolderMenuCard(
             .height(100.dp)
             .clickable { onClick() },
         color = Color.Transparent,
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, DeepNavy.copy(alpha = 0.08f))
+        shape = RoundedCornerShape(24.dp)
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -431,5 +420,8 @@ private fun ActivityItem(
 @Preview(showBackground = true)
 @Composable
 private fun ProfilePreview() {
-    ProfileScreen(onSecurityClick = {}, onNotificationClick = {}, onAboutClick = {})
+    ProfileScreen(
+        onSecurityClick = {},
+        onAboutClick = {}
+    )
 }

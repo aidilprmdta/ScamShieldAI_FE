@@ -31,6 +31,7 @@ fun HomeScreen(
     onScanModeSelected: (String) -> Unit,
     onEducationSelected: () -> Unit,
     onHistoryClick: () -> Unit,
+    onNotificationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedMode by remember { mutableStateOf<String?>(null) }
@@ -44,7 +45,7 @@ fun HomeScreen(
         )
         
         Scaffold(
-            topBar = { HomeTopBar(threatCount, onHistoryClick) },
+            topBar = { HomeTopBar(threatCount, onNotificationClick) },
             containerColor = Color.Transparent,
         ) { padding ->
             LazyColumn(
@@ -189,7 +190,7 @@ private fun ScanModeCard(
 }
 
 @Composable
-private fun HomeTopBar(threatCount: Int, onHistoryClick: () -> Unit) {
+private fun HomeTopBar(threatCount: Int, onNotificationClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -227,7 +228,7 @@ private fun HomeTopBar(threatCount: Int, onHistoryClick: () -> Unit) {
                 tint = PrussianBlue,
                 modifier = Modifier
                     .size(28.dp)
-                    .clickable { onHistoryClick() }
+                    .clickable { onNotificationClick() }
             )
         }
     }
@@ -259,7 +260,7 @@ private fun GreetingSection(userName: String) {
                 color = PrussianBlue
             )
             Text(
-                text = "Selamat Pagi",
+                text = "Mau cek apa?",
                 fontSize = 16.sp,
                 color = Slate500
             )
@@ -307,7 +308,7 @@ private fun EducationBannerCard(onClick: () -> Unit) {
                     contentDescription = "Edukasi",
                     modifier = Modifier
                         .size(90.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                        .clip(RoundedCornerShape(1.dp)),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -348,6 +349,7 @@ private fun HomePreview() {
         threatCount = 2,
         onScanModeSelected = {},
         onEducationSelected = {},
-        onHistoryClick = {}
+        onHistoryClick = {},
+        onNotificationClick = {}
     )
 }

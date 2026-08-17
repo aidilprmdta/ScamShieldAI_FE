@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_ScamShieldAI)
         super.onCreate(savedInstanceState)
         pendingNotificationRoute.value = parseNotificationRoute(intent)
         enableEdgeToEdge()

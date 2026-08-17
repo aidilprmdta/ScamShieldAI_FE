@@ -271,14 +271,33 @@ fun ScamShieldApp(
 
     val profileNavBadge = if (isAdmin) pendingAdminReportsCount else pendingMyReportsCount
 
-    val navItems = remember(profileNavBadge) {
-        listOf(
-            NavigationItemData(" ", "home", Icons.Filled.Home, Icons.Outlined.Home),
-            NavigationItemData(" ", "history", Icons.Filled.History, Icons.Outlined.History),
-            NavigationItemData(" ", "education_center", Icons.Filled.School, Icons.Outlined.School),
-            NavigationItemData(" ", "profile", Icons.Filled.Person, Icons.Outlined.Person, badgeCount = profileNavBadge)
+    val navItems = listOf(
+        NavigationItemData(
+            route = "home",
+            selectedIcon = Icons.Filled.Home,
+            unselectedIcon = Icons.Outlined.Home,
+            title = "Beranda"
+        ),
+        NavigationItemData(
+            route = "education_center",
+            selectedIcon = Icons.Filled.School,
+            unselectedIcon = Icons.Outlined.School,
+            title = "Edukasi"
+        ),
+        NavigationItemData(
+            route = "history",
+            selectedIcon = Icons.Filled.History,
+            unselectedIcon = Icons.Outlined.History,
+            title = "Riwayat"
+        ),
+        NavigationItemData(
+            route = "profile",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+            title = "Profil",
+            badgeCount = profileNavBadge
         )
-    }
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -330,14 +349,11 @@ fun ScamShieldApp(
                         )
                     }
                     composable("register") {
-                        val regContext = LocalContext.current
                         RegisterScreen(
                             onRegisterSuccess = {
-                                coroutineScope.launch {
-                                    AppPreferences.setSavedToken(regContext, AuthTokenStore.idToken, AuthTokenStore.refreshToken)
-                                }
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
+                                showSuccess("Registrasi berhasil! Silakan masuk.")
+                                navController.navigate("login") {
+                                    popUpTo("register") { inclusive = true }
                                 }
                             },
                             onNavigateToLogin = {
@@ -372,6 +388,9 @@ fun ScamShieldApp(
                             },
                             onHistoryClick = {
                                 navController.navigate("history")
+                            },
+                            onNotificationClick = {
+                                navController.navigate("notifications")
                             }
                         )
                     }
@@ -508,9 +527,6 @@ fun ScamShieldApp(
                             },
                             onSecurityClick = {
                                 navController.navigate("security_privacy")
-                            },
-                            onNotificationClick = {
-                                navController.navigate("notifications")
                             },
                             onAboutClick = {
                                 navController.navigate("about")
