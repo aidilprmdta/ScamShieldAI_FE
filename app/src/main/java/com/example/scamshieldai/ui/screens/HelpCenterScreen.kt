@@ -21,13 +21,11 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -56,128 +54,105 @@ fun HelpCenterScreen(
     val categories = remember {
         listOf(
             HelpCategory(
-                title = "Memulai & Akun",
+                title = "Akun",
                 icon = Icons.Outlined.Person,
                 iconTint = YaleBlue,
                 faqs = listOf(
                     HelpFaq(
-                        question = "Bagaimana cara membuat akun?",
-                        answer = "Buka halaman Daftar, masukkan email dan password (minimal 6 karakter), lalu ketuk Daftar. Anda juga bisa mendaftar dengan tombol Lanjut dengan Google."
+                        question = "Cara daftar?",
+                        answer = "Buka Daftar, isi email dan password (minimal 6 karakter), lalu ketuk Daftar. Bisa juga lewat Google."
                     ),
                     HelpFaq(
-                        question = "Saya lupa password, apa yang harus dilakukan?",
-                        answer = "Jika akun memakai email/password, hubungi dukungan ScamShield untuk bantuan pemulihan. Jika Anda login dengan Google, pulihkan akses lewat akun Google. Setelah masuk, ubah kata sandi lewat Profil → Keamanan & Privasi → Ubah Kata Sandi."
+                        question = "Lupa password?",
+                        answer = "Kalau login pakai Google, pulihkan lewat akun Google. Kalau email/password, hubungi dukungan ScamShield. Setelah masuk, ubah password di Profil → Keamanan."
                     ),
                     HelpFaq(
-                        question = "Bagaimana cara mengubah kata sandi?",
-                        answer = "Buka Profil → Keamanan & Privasi → Ubah Kata Sandi. Masukkan kata sandi lama dan kata sandi baru (minimal 6 karakter). Fitur ini hanya untuk akun email/password, bukan akun Google-only."
+                        question = "Ubah password?",
+                        answer = "Profil → Keamanan → Ubah Kata Sandi. Hanya untuk akun email/password."
                     ),
                     HelpFaq(
-                        question = "Bagaimana cara mengubah nama atau email?",
-                        answer = "Buka Profil → Edit Profil. Ubah nama tampilan dan/atau email, lalu ketuk Simpan Perubahan. Perubahan akan langsung terlihat di halaman profil."
+                        question = "Ubah nama atau email?",
+                        answer = "Profil → Edit Profil, ubah data, lalu Simpan."
                     ),
                     HelpFaq(
-                        question = "Apakah saya harus login untuk menganalisis chat/link?",
-                        answer = "Analisis bisa dilakukan tanpa login. Namun untuk menyimpan riwayat scan, mengelola laporan, dan menerima notifikasi status laporan, Anda perlu login terlebih dahulu."
+                        question = "Harus login dulu buat scan?",
+                        answer = "Tidak. Tapi riwayat, laporan, dan notifikasi status butuh akun yang sudah masuk."
                     )
                 )
             ),
             HelpCategory(
-                title = "Scan Chat & Screenshot",
+                title = "Scan chat & screenshot",
                 icon = Icons.Outlined.Chat,
                 iconTint = Cerulean,
                 faqs = listOf(
                     HelpFaq(
-                        question = "Bagaimana cara menganalisis chat mencurigakan?",
-                        answer = "Dari Beranda, pilih Scan Chat. Tempel atau ketik isi pesan (SMS/WhatsApp/email), lalu ketuk analisis. ScamShield AI akan menilai skor risiko, menandai red flags, dan memberi rekomendasi."
+                        question = "Cara cek chat mencurigakan?",
+                        answer = "Di Beranda pilih Scan Chat, tempel atau ketik isinya, lalu jalankan. Hasilnya skor risiko plus penjelasan singkat."
                     ),
                     HelpFaq(
-                        question = "Apa bedanya Scan Chat dan Scan Screenshot?",
-                        answer = "Scan Chat untuk teks yang Anda ketik/tempel langsung. Scan Screenshot memakai OCR untuk membaca teks dari gambar chat, lalu menganalisisnya dengan cara yang sama."
+                        question = "Bedanya Scan Chat dan Screenshot?",
+                        answer = "Scan Chat untuk teks yang diketik/ditempel. Screenshot membaca teks dari gambar dulu, lalu dicek sama seperti teks biasa."
                     ),
                     HelpFaq(
-                        question = "Mengapa hasil scan menampilkan risiko tinggi?",
-                        answer = "AI mendeteksi pola umum penipuan seperti urgensi berlebih, permintaan OTP/transfer, tautan mencurigakan, atau bahasa rekayasa sosial. Baca penjelasan dan red flags pada hasil analisis sebelum bertindak."
+                        question = "Kenapa hasilnya risiko tinggi?",
+                        answer = "Biasanya ada pola seperti desakan waktu, minta OTP/transfer, atau tautan aneh. Baca penjelasan di hasil sebelum bertindak."
                     )
                 )
             ),
             HelpCategory(
-                title = "Cek Link & QR",
+                title = "Link & QR",
                 icon = Icons.Outlined.Link,
                 iconTint = SafeGreen,
                 faqs = listOf(
                     HelpFaq(
-                        question = "Bagaimana cara mengecek tautan?",
-                        answer = "Pilih Cek Link di Beranda, tempel URL lengkap (termasuk https:// bila ada), lalu jalankan analisis. Sistem memeriksa reputasi tautan dan konteks penipuan."
+                        question = "Cara cek tautan?",
+                        answer = "Pilih Cek Tautan di Beranda, tempel URL lengkap, lalu jalankan."
                     ),
                     HelpFaq(
-                        question = "Apakah Scan QR aman digunakan?",
-                        answer = "Ya. Pilih Scan QR, izinkan akses kamera, lalu arahkan ke kode QR. Aplikasi membaca isi QR tanpa langsung membuka situs, lalu menganalisis kontennya terlebih dahulu."
+                        question = "Scan QR langsung buka situs?",
+                        answer = "Tidak. QR dibaca dulu, isinya dicek, baru Anda putuskan mau buka atau tidak."
                     ),
                     HelpFaq(
-                        question = "QRIS di toko terlihat mencurigakan, apa yang harus saya lakukan?",
-                        answer = "Jangan langsung bayar. Scan dulu dengan ScamShield AI. Periksa apakah stiker QR ditempel di atas yang lain, dan pastikan nama merchant di aplikasi pembayaran cocok dengan toko fisik."
+                        question = "QRIS toko kelihatan aneh?",
+                        answer = "Jangan bayar dulu. Cek apakah stiker ditempel di atas yang lain, dan cocokkan nama merchant di aplikasi bayar dengan toko fisik."
                     )
                 )
             ),
             HelpCategory(
-                title = "Riwayat & Laporan",
+                title = "Riwayat & laporan",
                 icon = Icons.Outlined.History,
                 iconTint = WarningYellow,
                 faqs = listOf(
                     HelpFaq(
-                        question = "Di mana saya melihat hasil scan sebelumnya?",
-                        answer = "Buka tab Riwayat di navigasi bawah. Setiap analisis yang berhasil disimpan (saat Anda login) muncul di sana dan bisa dibuka ulang atau dihapus."
+                        question = "Di mana hasil scan lama?",
+                        answer = "Tab Riwayat. Muncul kalau Anda login saat scan."
                     ),
                     HelpFaq(
-                        question = "Bagaimana cara melaporkan konten penipuan?",
-                        answer = "Dari hasil analisis, pilih opsi Laporkan, atau gunakan fitur laporan komunitas. Isi tipe, konten, dan catatan bila perlu. Status laporan bisa dipantau di Profil → Laporan Saya."
+                        question = "Cara laporkan penipuan?",
+                        answer = "Dari hasil analisis pilih Laporkan, isi kategori dan detail. Statusnya di Profil → Laporan Saya."
                     ),
                     HelpFaq(
-                        question = "Apa arti status verified / rejected / pending?",
-                        answer = "Pending berarti menunggu tinjauan. Verified berarti laporan diterima/diverifikasi admin. Rejected berarti laporan ditolak. Anda mendapat notifikasi saat status berubah (jika notifikasi diaktifkan)."
+                        question = "Arti pending / verified / rejected?",
+                        answer = "Pending: masih ditinjau. Verified: diterima. Rejected: ditolak."
                     )
                 )
             ),
             HelpCategory(
-                title = "Edukasi & Keamanan",
+                title = "Edukasi & data",
                 icon = Icons.Outlined.School,
-                iconTint = Color(0xFFA855F7),
+                iconTint = DeepNavy,
                 faqs = listOf(
                     HelpFaq(
-                        question = "Apa isi menu Edukasi?",
-                        answer = "Pusat edukasi berisi artikel dan kuis tentang phishing, rekayasa sosial, QRIS palsu, malware, dan tips keamanan digital agar Anda lebih waspada di luar aplikasi."
+                        question = "Isi menu Edukasi?",
+                        answer = "Artikel dan kuis soal phishing, QRIS palsu, dan tip keamanan."
                     ),
                     HelpFaq(
-                        question = "Apakah data scan saya aman?",
-                        answer = "Analisis dikirim ke server secara terenkripsi (HTTPS pada produksi). Riwayat tersimpan untuk akun Anda. Jangan masukkan password, PIN, atau kode OTP ke kolom scan."
+                        question = "Data scan aman?",
+                        answer = "Dikirim lewat HTTPS. Jangan masukkan password, PIN, atau OTP ke kolom scan."
                     ),
                     HelpFaq(
-                        question = "Bagaimana mengatur notifikasi?",
-                        answer = "Buka Profil → Notifikasi. Anda bisa mengaktifkan/nonaktifkan semua notifikasi atau per kategori (peringatan keamanan, edukasi, pengumuman sistem)."
-                    )
-                )
-            ),
-            HelpCategory(
-                title = "Masalah Umum",
-                icon = Icons.Outlined.Security,
-                iconTint = DangerRed,
-                faqs = listOf(
-                    HelpFaq(
-                        question = "Aplikasi tidak bisa login / register?",
-                        answer = "Pastikan backend berjalan dan perangkat terhubung ke jaringan yang sama (untuk development). Periksa email & password, lalu coba lagi. Jika memakai Google Sign-In, pastikan akun Google aktif."
-                    ),
-                    HelpFaq(
-                        question = "Riwayat kosong padahal sudah scan?",
-                        answer = "Pastikan Anda sudah login saat menganalisis. Tanpa login, hasil tetap tampil setelah scan tetapi mungkin tidak tersimpan ke riwayat akun. Coba pull-to-refresh di halaman Riwayat."
-                    ),
-                    HelpFaq(
-                        question = "Notifikasi tidak muncul?",
-                        answer = "Izinkan notifikasi di pengaturan sistem Android untuk ScamShield, lalu aktifkan juga di Profil → Notifikasi. Login ulang agar token FCM terdaftar ulang ke server."
-                    ),
-                    HelpFaq(
-                        question = "Siapa yang bisa saya hubungi?",
-                        answer = "Untuk pertanyaan terkait aplikasi atau laporan penipuan yang mendesak, hubungi tim ScamShield AI melalui email dukungan di halaman Tentang, atau laporkan kasus ke pihak berwenang (BSSN / polisi siber) bila kerugian finansial terjadi."
+                        question = "Atur notifikasi?",
+                        answer = "Profil → Notifikasi. Bisa dimatikan semua atau per kategori."
                     )
                 )
             )
@@ -215,7 +190,7 @@ fun HelpCenterScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "FAQ & panduan penggunaan",
+                    text = "Pertanyaan umum",
                     color = Slate500,
                     fontSize = 13.sp
                 )
@@ -228,30 +203,13 @@ fun HelpCenterScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 24.dp)
         ) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = YaleBlue.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.12f))
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "Butuh bantuan cepat?",
-                        color = PrussianBlue,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Pilih kategori di bawah, lalu ketuk pertanyaan untuk melihat jawabannya. Konten ini membantu Anda memakai ScamShield AI dengan aman dan efektif.",
-                        color = Slate500,
-                        fontSize = 13.sp,
-                        lineHeight = 20.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Ketuk kategori, lalu ketuk pertanyaan untuk melihat jawaban.",
+                color = Slate500,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                modifier = Modifier.padding(bottom = 20.dp)
+            )
 
             categories.forEach { category ->
                 HelpCategorySection(category = category)
@@ -260,7 +218,7 @@ fun HelpCenterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Tips: jangan pernah membagikan OTP, PIN, atau password melalui chat yang dianalisis di aplikasi ini.",
+                text = "Jangan bagikan OTP, PIN, atau password lewat chat.",
                 color = Slate400,
                 fontSize = 12.sp,
                 lineHeight = 18.sp,
@@ -276,11 +234,9 @@ private fun HelpCategorySection(category: HelpCategory) {
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = YaleBlue.copy(alpha = 0.06f)),
+        modifier = Modifier.fillMaxWidth(),
         color = CardWhite,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
     ) {
         Column {

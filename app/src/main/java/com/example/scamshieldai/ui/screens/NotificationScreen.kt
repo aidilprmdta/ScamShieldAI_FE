@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -85,7 +84,13 @@ fun NotificationScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Inbox",
+                color = Slate500,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
+            )
 
             when {
                 isLoading -> {
@@ -143,11 +148,9 @@ fun NotificationScreen(
                 }
                 else -> {
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = YaleBlue.copy(alpha = 0.05f)),
+                        modifier = Modifier.fillMaxWidth(),
                         color = CardWhite,
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
                     ) {
                         Column {
@@ -166,6 +169,119 @@ fun NotificationScreen(
                             }
                         }
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = if (isAllNotificationsEnabled) YaleBlue else CardWhite,
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.1f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isAllNotificationsEnabled) Color.White.copy(alpha = 0.2f) else Cerulean.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.NotificationsActive,
+                            contentDescription = null,
+                            tint = if (isAllNotificationsEnabled) Color.White else Cerulean,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Izinkan Notifikasi",
+                            color = if (isAllNotificationsEnabled) Color.White else PrussianBlue,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Aktifkan semua pemberitahuan push",
+                            color = if (isAllNotificationsEnabled) Color.White.copy(alpha = 0.7f) else Slate500,
+                            fontSize = 12.sp
+                        )
+                    }
+                    Switch(
+                        checked = isAllNotificationsEnabled,
+                        onCheckedChange = { enabled ->
+                            scope.launch { AppPreferences.setNotifAll(context, enabled) }
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Cerulean,
+                            checkedTrackColor = Color.White,
+                            uncheckedThumbColor = Slate400,
+                            uncheckedTrackColor = Slate100
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Kategori",
+                color = Slate500,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
+            )
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = CardWhite,
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
+            ) {
+                Column(modifier = Modifier.alpha(if (isAllNotificationsEnabled) 1f else 0.5f)) {
+                    NotificationSettingItem(
+                        icon = Icons.Outlined.ErrorOutline,
+                        label = "Peringatan Keamanan",
+                        description = "Status laporan dan peringatan",
+                        checked = isSecurityAlertsEnabled && isAllNotificationsEnabled,
+                        onCheckedChange = {
+                            if (isAllNotificationsEnabled) {
+                                scope.launch { AppPreferences.setNotifSecurity(context, it) }
+                            }
+                        },
+                        iconTint = DangerRed
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), thickness = 0.5.dp, color = Slate100)
+                    NotificationSettingItem(
+                        icon = Icons.Outlined.School,
+                        label = "Update Edukasi",
+                        description = "Materi penipuan terbaru",
+                        checked = isEducationUpdatesEnabled && isAllNotificationsEnabled,
+                        onCheckedChange = {
+                            if (isAllNotificationsEnabled) {
+                                scope.launch { AppPreferences.setNotifEducation(context, it) }
+                            }
+                        },
+                        iconTint = Cerulean
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), thickness = 0.5.dp, color = Slate100)
+                    NotificationSettingItem(
+                        icon = Icons.Outlined.Info,
+                        label = "Pengumuman Sistem",
+                        description = "Pembaruan aplikasi & tips",
+                        checked = isSystemInfoEnabled && isAllNotificationsEnabled,
+                        onCheckedChange = {
+                            if (isAllNotificationsEnabled) {
+                                scope.launch { AppPreferences.setNotifSystem(context, it) }
+                            }
+                        },
+                        iconTint = YaleBlue
+                    )
                 }
             }
 

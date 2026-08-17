@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -80,7 +79,7 @@ fun SecurityPrivacyScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            SecuritySection(title = "KEAMANAN AKUN") {
+            SecuritySection(title = "Akun") {
                 SecurityNavItem(
                     icon = Icons.Default.Password,
                     label = "Ubah Kata Sandi",
@@ -92,7 +91,7 @@ fun SecurityPrivacyScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SecuritySection(title = "DATA & IZIN") {
+            SecuritySection(title = "Data & izin") {
                 SecurityNavItem(
                     icon = Icons.Default.Security,
                     label = "Manajemen Izin",
@@ -118,7 +117,7 @@ fun SecurityPrivacyScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
-                text = "ScamShield AI berkomitmen untuk melindungi data pribadi Anda. Semua pemindaian dilakukan secara lokal atau terenkripsi.",
+                text = "Data dikirim lewat koneksi aman. Jangan masukkan password atau OTP di kolom scan.",
                 color = Slate500,
                 fontSize = 12.sp,
                 lineHeight = 18.sp,
@@ -137,16 +136,13 @@ private fun SecuritySection(title: String, content: @Composable ColumnScope.() -
             text = title,
             color = Slate500,
             fontSize = 12.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 1.sp,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(start = 8.dp, bottom = 12.dp)
         )
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(12.dp, RoundedCornerShape(24.dp), spotColor = YaleBlue.copy(alpha = 0.05f)),
+            modifier = Modifier.fillMaxWidth(),
             color = CardWhite,
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(12.dp),
             border = BorderStroke(1.dp, YaleBlue.copy(alpha = 0.05f))
         ) {
             Column {

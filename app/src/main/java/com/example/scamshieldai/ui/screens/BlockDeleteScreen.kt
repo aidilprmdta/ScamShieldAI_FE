@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -85,7 +84,7 @@ fun BlockDeleteScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Nomor pengirim telah diblokir dan data pesan berbahaya telah dihapus dari riwayat aktif Anda.",
+            text = "Pengirim diblokir dan pesan dihapus dari riwayat.",
             color = Slate500,
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
@@ -100,8 +99,8 @@ fun BlockDeleteScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Brush.linearGradient(listOf(Cerulean, YaleBlue)))
+                .clip(RoundedCornerShape(12.dp))
+                .background(Cerulean)
                 .clickable { onBackToHome() },
             contentAlignment = Alignment.Center
         ) {

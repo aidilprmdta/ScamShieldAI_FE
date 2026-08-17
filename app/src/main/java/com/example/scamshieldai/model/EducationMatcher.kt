@@ -1,8 +1,6 @@
 package com.example.scamshieldai.model
 
-/**
- * Memetakan kategori hasil analisis AI ke konten edukasi lokal.
- */
+/** Memetakan kategori hasil analisis ke konten edukasi lokal. */
 object EducationMatcher {
 
     fun findByCategory(
