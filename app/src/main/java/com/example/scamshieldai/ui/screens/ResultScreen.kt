@@ -174,7 +174,7 @@ fun ResultScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Skor Kepercayaan AI: ${result.riskScore}/100",
+                    text = "Skor Risiko: ${result.riskScore}/100",
                     color = Slate500,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
