@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "35449512055",
+    "project_id": "scamshieldai-9de2170b",
+    "storage_bucket": "scamshieldai-9de2170b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:35449512055:android:f98052e1bea454b861e672",
+        "android_client_info": {
+          "package_name": "com.example.scamshieldai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "35449512055-6964j6gp7nhaq3eh4mh8gp93ftkca44a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.scamshieldai",
+            "certificate_hash": "47671f38ffab2981f5d08bd390e69adf4fd31d0e"
+          }
+        },
+        {
+          "client_id": "35449512055-pj9v9l94cehld6bs7uvqgt0t5p7o5lfi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqsFQOtBnJD3jB-umT_dJlYXiTRpK6c8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "35449512055-pj9v9l94cehld6bs7uvqgt0t5p7o5lfi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
