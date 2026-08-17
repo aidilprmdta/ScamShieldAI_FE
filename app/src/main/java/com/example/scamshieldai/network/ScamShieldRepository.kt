@@ -112,13 +112,14 @@ class ScamShieldRepository {
         return try {
             val token = getAuthToken()
             val response = api.analyzeChat(AnalyzeChatRequest(text, source), token)
-            if (response.isSuccessful && response.body()?.success == true) {
-                Result.success(response.body()!!.data!!)
+            val body = response.body()
+            if (response.isSuccessful && body?.success == true && body.data != null) {
+                Result.success(body.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal menganalisis chat"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal menganalisis pesan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal menganalisis pesan")))
         }
     }
 
@@ -126,13 +127,14 @@ class ScamShieldRepository {
         return try {
             val token = getAuthToken()
             val response = api.analyzeLink(AnalyzeLinkRequest(url, contextText), token)
-            if (response.isSuccessful && response.body()?.success == true) {
-                Result.success(response.body()!!.data!!)
+            val body = response.body()
+            if (response.isSuccessful && body?.success == true && body.data != null) {
+                Result.success(body.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal menganalisis link"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal menganalisis tautan")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal menganalisis tautan")))
         }
     }
 
@@ -140,13 +142,14 @@ class ScamShieldRepository {
         return try {
             val token = getAuthToken()
             val response = api.analyzeQr(AnalyzeQrRequest(decodedContent), token)
-            if (response.isSuccessful && response.body()?.success == true) {
-                Result.success(response.body()!!.data!!)
+            val body = response.body()
+            if (response.isSuccessful && body?.success == true && body.data != null) {
+                Result.success(body.data)
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Gagal menganalisis QR"))
+                Result.failure(Exception(response.apiErrorMessage("Gagal menganalisis QR")))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage("Gagal menganalisis QR")))
         }
     }
 
