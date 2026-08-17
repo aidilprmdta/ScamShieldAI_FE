@@ -10,7 +10,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +29,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scamshieldai.network.NotificationItem
+import com.example.scamshieldai.settings.AppPreferences
 import com.example.scamshieldai.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotificationScreen(
@@ -38,6 +44,13 @@ fun NotificationScreen(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val isAllNotificationsEnabled by AppPreferences.notifAllFlow(context).collectAsState(initial = true)
+    val isSecurityAlertsEnabled by AppPreferences.notifSecurityFlow(context).collectAsState(initial = true)
+    val isEducationUpdatesEnabled by AppPreferences.notifEducationFlow(context).collectAsState(initial = true)
+    val isSystemInfoEnabled by AppPreferences.notifSystemFlow(context).collectAsState(initial = false)
 
     Column(
         modifier = modifier
@@ -324,6 +337,48 @@ private fun NotificationInboxItem(
                 Text(text = item.createdAt.take(19).replace('T', ' '), color = Slate400, fontSize = 11.sp)
             }
         }
+    }
+}
+
+@Composable
+private fun NotificationSettingItem(
+    icon: ImageVector,
+    label: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    iconTint: Color
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(iconTint.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = label, color = PrussianBlue, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(text = description, color = Slate500, fontSize = 12.sp)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Cerulean,
+                uncheckedThumbColor = Slate400,
+                uncheckedTrackColor = Slate100
+            )
+        )
     }
 }
 
