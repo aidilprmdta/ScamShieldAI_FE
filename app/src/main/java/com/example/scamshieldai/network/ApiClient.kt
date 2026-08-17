@@ -86,9 +86,9 @@ object ApiClient {
         .addInterceptor(loggingInterceptor)
         .addInterceptor(authHeaderInterceptor)
         .authenticator(tokenAuthenticator)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
         .build()
 
     private val retrofit = Retrofit.Builder()
